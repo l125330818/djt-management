@@ -1,0 +1,97 @@
+.nav-bar{
+  position: fixed;
+  left:0;
+  height:100%;
+  width:100px;
+  padding-top: 100px;
+  background-color: #4a9df8;
+  .nav-bar-li{
+    height:82px;
+    text-align: center;
+    cursor:pointer;
+    &.active{
+      background-color: #428ddf;
+    }
+    >a{
+      height: 32px;
+      display: block;
+      color:#fff;
+      background-position: center 10px;
+      background-repeat: no-repeat;
+      padding-top: 50px;
+      &.sp{
+        background-image: url("../../images/spgl.png");
+      }
+      &.kh{
+        background-image: url("../../images/khgl.png");
+      }
+      &.cz{
+        background-image: url("../../images/zjls.png");
+      }
+      &.tz{
+        background-image: url("../../images/yqtg.png");
+      }
+      &.dd{
+        background-image: url("../../images/jygl.png");
+      }
+    }
+  }
+
+}
+.header{
+  padding: 10px 0;
+  background-color: #337ab7;
+  color:#fff;
+  &-title{
+    width: 100px;
+    padding: 0 30px;
+    float: left;
+    h1{
+      line-height: 40px;
+      border-right: 1px solid #fff;
+      box-sizing: content-box !important;
+    }
+  }
+  p{font-size: 24px;}
+}
+.right-page{
+  margin-left: 100px;
+  height: 100%;
+  width: 100%;
+}
+.page-content{
+  padding: 30px 15px 60px 15px;
+  .footer{
+    position: fixed;
+    z-index: 1010;
+    bottom: 0;
+    left: 182px;
+    right: 0;
+    height: 60px;
+    border-top: 1px solid #ccc;
+    background-color: #fff;
+    padding: 0 29px;
+    line-height: 60px;
+  }
+  .rui-pagination-detail{
+    line-height: 60px !important;
+  }
+  .rui-icon{
+    vertical-align: middle!important;
+  }
+  .content{
+    padding: 15px 15px 60px 15px;
+    background-color: #fff;
+
+  }
+}
+.header-bread{
+  height: 50px;
+  border: 1px solid #ccc;border-top:none;border-left: none;
+}
+.line-50{
+  line-height: 50px;
+}
+.m-r-10{
+  margin-right: 10px;
+}
