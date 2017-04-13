@@ -18,3 +18,23 @@ a{ text-decoration:none; }
 *{
   box-sizing: content-box !important;
 }
+.table{
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  thead{
+    background-color: #f7f7f7;
+  }
+  tr{
+    &:hover{
+      background-color: #f2f2f2;
+    }
+  }
+  td{
+    border:1px solid #ccc;
+    height:40px;
+  }
+}
+.right{
+  float: right;
+}

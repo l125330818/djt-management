@@ -6,6 +6,7 @@ import Nav from "./nav";
 import Header from "./header";
 import moment from 'moment';
 import 'moment/locale/zh-cn';
+import RUI from "react-component-lib";
 moment.locale('zh-cn');
 export default class Layout extends React.Component{
     render(){
