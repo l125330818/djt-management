@@ -50,6 +50,33 @@ export default class List extends React.Component{
                                     <td>发货</td>
                                     <td>操作</td>
                                 </tr>
+                                <tr>
+                                    <td>12313456</td>
+                                    <td>公司名称</td>
+                                    <td>13.22</td>
+                                    <td>品牌</td>
+                                    <td>2017年4月13日 22:35:45</td>
+                                    <td>发货</td>
+                                    <td>操作</td>
+                                </tr>
+                                <tr>
+                                    <td>12313456</td>
+                                    <td>公司名称</td>
+                                    <td>13.22</td>
+                                    <td>品牌</td>
+                                    <td>2017年4月13日 22:35:45</td>
+                                    <td>发货</td>
+                                    <td>操作</td>
+                                </tr>
+                                <tr>
+                                    <td>12313456</td>
+                                    <td>公司名称</td>
+                                    <td>13.22</td>
+                                    <td>品牌</td>
+                                    <td>2017年4月13日 22:35:45</td>
+                                    <td>发货</td>
+                                    <td>操作</td>
+                                </tr>
                             </tbody>
                         </table>
                         <Pager onPage ={this.getList} {...pager}/>

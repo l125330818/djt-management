@@ -23,7 +23,9 @@ a{ text-decoration:none; }
   border-collapse: collapse;
   text-align: center;
   thead{
-    background-color: #f7f7f7;
+    tr{
+      background-color: #f7f7f7;
+    }
   }
   tr{
     &:hover{

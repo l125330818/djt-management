@@ -39,9 +39,6 @@ export default class Header extends React.Component{
                 <div className="header-bread clearfix">
                     <Breadcrumb className = "line-50">
                         <Breadcrumb.Item href="javascript:;">
-                            <Icon type="home" />
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item href="javascript:;">
                             <span>{this.props.bread[0]}</span>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>
