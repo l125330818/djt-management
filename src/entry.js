@@ -2,7 +2,7 @@
 import "./css/base.scss";
 import { Router, Route, hashHistory } from 'react-router';
 import Login from "./js/page/order/orderList";
-import config from "./entry.config";
+import config from "./entryConfig.js";
 //最终渲染
 ReactDOM.render((
     <Router history={hashHistory}>
