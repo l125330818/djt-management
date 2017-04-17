@@ -23,6 +23,9 @@ export default class List extends React.Component{
     recharge(){
         hashHistory.push("recharge");
     }
+    add(){
+        hashHistory.push("addCustomer");
+    }
     render(){
         let {pager} =this.state;
         return(
@@ -31,6 +34,10 @@ export default class List extends React.Component{
                     <div className="search-div">
                         <RUI.Input placeholder = "请输入要查询的姓名、公司名称、账号、地区"/>
                         <RUI.Button className = "primary" >查询</RUI.Button>
+                        <div className="right">
+                            <RUI.Button onClick = {this.add} className = "primary">新增客户</RUI.Button>
+
+                        </div>
                     </div>
                     <div className="order-content">
                         <table className="table">
