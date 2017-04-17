@@ -23,6 +23,18 @@ export default class List extends React.Component{
         return(
             <div>
                 <Layout mark = "dd" bread = {["订单管理","订单列表"]}>
+                    <div className="p-l-15">
+                        <RUI.Button className = "primary relative" >
+                            <span>订货</span>
+                            <i className="empty"/>
+                            <i className="trigger">1</i>
+                        </RUI.Button>
+                        <RUI.Button className = "primary relative" >
+                            <span>退货</span>
+                            <i className="empty"/>
+                            <i className="trigger">99+</i>
+                        </RUI.Button>
+                    </div>
                     <div className="search-div">
                         <RUI.Input placeholder = "请输入订单号或公司名称"/>
                         <RUI.Button className = "primary" >查询</RUI.Button>

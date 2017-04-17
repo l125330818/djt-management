@@ -9,3 +9,23 @@
     width: 10%;
   }
 }
+.empty{
+  height: 10px;
+  width: 10px;
+  display: inline-block;
+  background-color: transparent;
+}
+.trigger{
+  height: 20px;
+  width: 20px;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 20px;
+  background-color: red;
+  display: inline-block;
+  font-style: normal;
+  position: absolute;
+  top:5px;
+  right: 5px;
+  font-size: 12px;
+}
