@@ -37,9 +37,11 @@ export default class Upload extends React.Component{
                 }
             },
             onComplete:function(e,data){
-                _this.props.callback && _this.props.callback("https://ss1.baidu.com/-4o3dSag_xI4khGko9WTAnF6hhy/image/h%3D200/sign=34b533d9b63eb1355bc7b0bb961fa8cb/9f510fb30f2442a76d8ce294db43ad4bd1130204.jpg");
+                console.log(node);
+                _this.props.callback && _this.props.callback("https://ss1.baidu.com/-4o3dSag_xI4khGko9WTAnF6hhy/image/h%3D200/sign=34b533d9b63eb1355bc7b0bb961fa8cb/9f510fb30f2442a76d8ce294db43ad4bd1130204.jpg",_this.props.index);
+                _this.replace();
                 if(data.success){
-                    _this.props.callback && _this.props.callback(data.resultMap.picPath);
+                    _this.props.callback && _this.props.callback(null,data.resultMap.picPath,_this.props.index);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.description]);
                 }
@@ -54,7 +56,7 @@ export default class Upload extends React.Component{
     handleCancel(){
         this.setState({visible:false});
     }
-    replace(index){
+    replace(){
         let node = $(ReactDOM.findDOMNode(this.refs.replace));
         this.upload(node);
     }
@@ -63,31 +65,24 @@ export default class Upload extends React.Component{
     }
     render(){
         let {imgUrl,visible} = this.state;
-        let url = this.props.url;
+        let {isAdd,url} = this.props;
         return(
             <div className = {this.props.className || ""}>
                 {
-                    url.length>0 ?
-                    url.map((item,index)=>{
-                        return(
-                            <div className="upload-div relative">
-                                <img src={item.url}  className="upload-img" alt=""/>
-                                <div className="upload-menu">
-                                    <div className="left-menu" onClick = {this.replace.bind(this,index)} ref = "replace">替换</div>
-                                    <div className="right-menu" onClick = {this.delete.bind(this,index)}>删除</div>
-                                </div>
-                            </div>
-                            )
-                    })
+                    isAdd?
+                        <div className="upload-div" ref = "replace">
+                            <i className="upload-trigger"/>
+                        </div>
                         :
-                    null
+                        <div className="upload-div relative">
+                            <img src={url}  className="upload-img" alt=""/>
+                            <div className="upload-menu">
+                                <div className="left-menu" onClick = {this.replace.bind(this)} ref = "replace">替换</div>
+                                <div className="right-menu" onClick = {this.delete.bind(this)}>删除</div>
+                            </div>
+                        </div>
                 }
-                {
-                    url.length <3 &&
-                    <div className="upload-div" ref = "replace">
-                        <i className="upload-trigger"/>
-                    </div>
-                }
+
             </div>
         )
     }

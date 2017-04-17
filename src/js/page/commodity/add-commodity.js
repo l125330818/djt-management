@@ -37,10 +37,11 @@ export default class Add extends React.Component{
             brandSelect:arr
         })
     }
-    uploadCallback(url){
+    uploadCallback(url,index){
+        console.log(index);
         let {imgUrl} = this.state;
         imgUrl.push({url});
-        this.setState({});
+        this.setState({imgUrl});
     }
     changeInput(){}
     selectBrand(e){
@@ -76,7 +77,14 @@ export default class Add extends React.Component{
                 <div className="add-content">
                     <div className="clearfix">
                         <label className="left-label left"> <span className="require">*</span> 商品图片：</label>
-                        <Upload className = "add-upload" callback = {this.uploadCallback} url = {imgUrl}/>
+                        {
+                            imgUrl.map((item,index)=>{
+                                return (
+                                    <Upload className = "add-upload" index = {index} callback = {this.uploadCallback} url = {item.url}/>
+                                )
+                            })
+                        }
+                        <Upload className = "add-upload" callback = {this.uploadCallback} isAdd = {true}/>
                     </div>
                     <LabelInput onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "商品名称："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "商品描述1："/>
