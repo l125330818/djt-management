@@ -15,9 +15,7 @@ ul{
 }
 a{ text-decoration:none; }
 .clearfix:after{content:"";display:block;height:0;clear:both;visibility:hidden}
-*{
-  box-sizing: content-box !important;
-}
+
 .table{
   width: 100%;
   border-collapse: collapse;
@@ -42,4 +40,28 @@ a{ text-decoration:none; }
 }
 .p-l-15{
   padding-left: 15px;
+}
+.relative{
+  position: relative;
+}
+.require{
+  color:red;
+}
+.m-t-10 {margin-top: 10px !important; }
+
+.w-245 {width: 245px !important; }
+.left-label {
+  line-height: 32px;
+  width: 90px;
+  display: inline-block;
+  text-align: right;
+  margin-right: 20px; }
+.p-l-r-10{
+  padding: 0 10px;
+}
+.m-l-10{
+  margin-left: 10px;
+}
+.m-l-20{
+  margin-left: 20px;
 }

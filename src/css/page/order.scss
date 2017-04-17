@@ -28,4 +28,44 @@
   top:5px;
   right: 5px;
   font-size: 12px;
+  .col-8{
+    width:8%;
+  }
+  .col-14{
+    width:14%;
+  }
+
+}
+.search-input{
+  width:85px !important;
+  margin-right: 5px !important;
+}
+.add-content{
+  padding: 30px 15px;
+  .rui-radio-selected{
+    display: inline-block;
+    height: 16px;
+    float: left;
+    margin-top: 8px;
+  }
+  .table{
+    width: 700px;
+    thead{
+      tr{
+        background-color: #fff;
+      }
+    }
+    tr{
+      &:hover{
+        background-color: #fff;
+      }
+    }
+  }
+  .m-l-110{
+    margin-left: 110px;
+  }
+}
+
+.add-upload{
+  float: left;
 }
