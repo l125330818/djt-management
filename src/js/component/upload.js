@@ -20,7 +20,7 @@ export default class Upload extends React.Component{
 
     componentDidMount() {
         if(!this.props.disabled){
-            let node = $(ReactDOM.findDOMNode(this.refs.upload));
+            let node = $(ReactDOM.findDOMNode(this.refs.replace));
             this.upload(node);
         }
     }
@@ -38,7 +38,6 @@ export default class Upload extends React.Component{
             },
             onComplete:function(e,data){
                 _this.props.callback && _this.props.callback("https://ss1.baidu.com/-4o3dSag_xI4khGko9WTAnF6hhy/image/h%3D200/sign=34b533d9b63eb1355bc7b0bb961fa8cb/9f510fb30f2442a76d8ce294db43ad4bd1130204.jpg");
-                _this.replace();
                 if(data.success){
                     _this.props.callback && _this.props.callback(data.resultMap.picPath);
                 }else{
@@ -71,7 +70,7 @@ export default class Upload extends React.Component{
                     url.length>0 ?
                     url.map((item,index)=>{
                         return(
-                            <div className="upload-div relative" ref = "upload">
+                            <div className="upload-div relative">
                                 <img src={item.url}  className="upload-img" alt=""/>
                                 <div className="upload-menu">
                                     <div className="left-menu" onClick = {this.replace.bind(this,index)} ref = "replace">替换</div>
@@ -85,7 +84,7 @@ export default class Upload extends React.Component{
                 }
                 {
                     url.length <3 &&
-                    <div className="upload-div" ref = "upload">
+                    <div className="upload-div" ref = "replace">
                         <i className="upload-trigger"/>
                     </div>
                 }

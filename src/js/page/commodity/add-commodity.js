@@ -185,6 +185,13 @@ export default class Add extends React.Component{
                         }
                     </div>
                 </div>
+                <div className="footer js-footer">
+                    <div className="left">
+                        <RUI.Button href="javascript:window.history.go(-1)">返回</RUI.Button>
+                        <RUI.Button className="primary" style={{marginLeft:"10px"}}
+                                    onClick={this.saveData}>保存</RUI.Button>
+                    </div>
+                </div>
             </Layout>
         )
     }
