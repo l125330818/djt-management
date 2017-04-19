@@ -7,7 +7,7 @@ import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
 export default class List extends React.Component{
     // 构造
-      constructor(props) {
+    constructor(props) {
         super(props);
         // 初始状态
         this.state = {
@@ -22,9 +22,8 @@ export default class List extends React.Component{
             },
             sortState:1
         };
-        this.recharge = this.recharge.bind(this);
         this.sortFn = this.sortFn.bind(this);
-      }
+    }
     getList(pageNo=1){
         let _this = this;
         let {pager,listRequest} = this.state;
@@ -62,46 +61,36 @@ export default class List extends React.Component{
         let {pager,sortState} =this.state;
         return(
             <div>
-                <Layout mark = "kh" bread = {["客户管理","客户列表"]}>
+                <Layout mark = "cz" bread = {["充值记录","充值列表"]}>
                     <div className="search-div">
-                        <RUI.Input placeholder = "请输入要查询的姓名、公司名称、账号、地区"/>
+                        <RUI.Input placeholder = "请输入名称或用户名"/>
                         <RUI.Button className = "primary" >查询</RUI.Button>
-                        <div className="right">
-                            <RUI.Button onClick = {this.add} className = "primary">新增客户</RUI.Button>
-
-                        </div>
                     </div>
                     <div className="order-content">
                         <table className="table">
                             <thead>
-                                <tr>
-                                    <td className="col-15">公司名称</td>
-                                    <td className="col-15">姓名</td>
-                                    <td className="col-15">帐号</td>
-                                    <td className="col-15">地区</td>
-                                    <td className= {sortState==1?"col-10 sort-des":"col-10 sort-asc"} onClick = {this.sortFn}>
-                                        <span className="m-r-5">客户级别</span>
-                                        <i className="sort-bottom"/>
-                                        <i className="sort-top"/>
-                                    </td>
-                                    <td className="col-15">总金额</td>
-                                    <td className="col-15">操作</td>
-                                </tr>
+                            <tr>
+                                <td className="col-15">充值公司</td>
+                                <td className="col-15">充值用户</td>
+                                <td className="col-15">充值品牌</td>
+                                <td className="col-15">充值金额</td>
+                                <td className= {sortState==1?"col-15 sort-des":"col-15 sort-asc"} onClick = {this.sortFn}>
+                                    <span className="m-r-5">充值时间</span>
+                                    <i className="sort-bottom"/>
+                                    <i className="sort-top"/>
+                                </td>
+                                <td className="col-15">充值类型</td>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>公司名称</td>
-                                    <td>张哥</td>
-                                    <td>帐号</td>
-                                    <td>四川地区</td>
-                                    <td>一级代理</td>
-                                    <td>13265.00</td>
-                                    <td>
-                                        <a href="javascript:;">查看&nbsp;|</a>
-                                        <a href="javascript:;" onClick = {this.recharge}>&nbsp;充值&nbsp; |</a>
-                                        <a href="javascript:;">&nbsp;禁用</a>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>四川公司</td>
+                                <td>张哥</td>
+                                <td>一叶子</td>
+                                <td>30000</td>
+                                <td>2017-04-19 22:57:39</td>
+                                <td>正向充值</td>
+                            </tr>
                             </tbody>
                         </table>
                         <Pager onPage ={this.getList} {...pager}/>
