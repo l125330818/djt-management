@@ -68,3 +68,27 @@
 .add-upload{
   float: left;
 }
+.add-sku-btn {
+  cursor: pointer;
+  height: 16px;
+  display: inline-block;
+  margin-top: 10px;
+  i{
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-left: 0;
+    margin-right: 10px;
+    background: url(../../images/add-sku-btn.png)no-repeat;
+  }
+}
+.ant-badge-count{
+  box-shadow: none;
+}
+.ant-badge{
+  position: absolute !important;
+  top: -10px;
+  right: -7px;
+}

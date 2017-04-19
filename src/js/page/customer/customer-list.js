@@ -16,8 +16,10 @@ export default class List extends React.Component{
                 pageSize:10,
                 totalNum:100,
             },
+            sortState:1
         };
         this.recharge = this.recharge.bind(this);
+        this.sortFn = this.sortFn.bind(this);
       }
     getList(){}
     recharge(){
@@ -26,8 +28,11 @@ export default class List extends React.Component{
     add(){
         hashHistory.push("addCustomer");
     }
+    sortFn(){
+        this.setState({sortState:!this.state.sortState});
+    }
     render(){
-        let {pager} =this.state;
+        let {pager,sortState} =this.state;
         return(
             <div>
                 <Layout mark = "kh" bread = {["客户管理","客户列表"]}>
@@ -47,7 +52,11 @@ export default class List extends React.Component{
                                     <td className="col-15">姓名</td>
                                     <td className="col-15">帐号</td>
                                     <td className="col-15">地区</td>
-                                    <td className="col-10">客户级别</td>
+                                    <td className= {sortState==1?"col-10 sort-des":"col-10 sort-asc"} onClick = {this.sortFn}>
+                                        <span className="m-r-5">客户级别</span>
+                                        <i className="sort-bottom"/>
+                                        <i className="sort-top"/>
+                                    </td>
                                     <td className="col-15">总金额</td>
                                     <td className="col-15">操作</td>
                                 </tr>

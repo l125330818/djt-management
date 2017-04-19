@@ -1,6 +1,7 @@
 /**
  * Created by Administrator on 2017-2-19.
  */
+import LimitInput from "./limitInput.js";
 const Input = React.createClass({
     render(){
         return(
@@ -12,11 +13,7 @@ const Input = React.createClass({
                         <i className="require">*</i>
                     }
                     {this.props.label || ""}</label>
-                <RUI.Input {...this.props}
-                    value = {this.props.value}
-                    disabled = {this.props.disabled || false}
-                    placeholder = {this.props.placeholder || ""}
-                    onChange = {(e)=>{this.props.onChange && this.props.onChange(e)}}/>
+                <LimitInput  {...this.props}/>
                 <span className="require m-l-10">{this.props.tips || ""}</span>
             </div>
         )

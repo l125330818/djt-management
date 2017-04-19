@@ -4,6 +4,7 @@
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
+import Badge  from 'antd/lib/badge';
 export default class List extends React.Component{
     // 构造
       constructor(props) {
@@ -26,13 +27,11 @@ export default class List extends React.Component{
                     <div className="p-l-15">
                         <RUI.Button className = "primary relative" >
                             <span>订货</span>
-                            <i className="empty"/>
-                            <i className="trigger">1</i>
+                            <Badge overflowCount = {99} count={8} />
                         </RUI.Button>
                         <RUI.Button className = "primary relative" >
                             <span>退货</span>
-                            <i className="empty"/>
-                            <i className="trigger">99+</i>
+                            <Badge overflowCount = {99} count={100} />
                         </RUI.Button>
                     </div>
                     <div className="search-div">

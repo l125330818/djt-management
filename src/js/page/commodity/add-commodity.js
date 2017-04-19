@@ -7,6 +7,9 @@ import Upload from "../../component/upload";
 import LabelInput from "../../component/label-input";
 import LabelArea from "../../component/label-textarea";
 import LabelSelect from "../../component/label-select";
+import LimitInput from "../../component/limitInput";
+const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,6}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
+
 export default class Add extends React.Component{
     // 构造
       constructor(props) {
@@ -137,10 +140,11 @@ export default class Add extends React.Component{
                                 specType==1?
                                     <tr>
                                         <td>
-                                            <RUI.Input className = "w-80"/>
+                                            <LimitInput reg = {moneyReg}
+                                                        className = "w-80"/>
                                         </td>
                                         <td>
-                                            <RUI.Input className = "w-80"/>
+                                            <LimitInput className = "w-80"/>
                                         </td>
                                         <td>
                                             <RUI.Input className = "w-80"/>
@@ -157,10 +161,10 @@ export default class Add extends React.Component{
                                         return(
                                             <tr>
                                                 <td>
-                                                    <RUI.Input className = "w-80"/>
+                                                    <LimitInput className = "w-80"/>
                                                 </td>
                                                 <td>
-                                                    <RUI.Input className = "w-80"/>
+                                                    <LimitInput className = "w-80"/>
                                                 </td>
                                                 <td>
                                                     <RUI.Input className = "w-80"/>
@@ -189,7 +193,9 @@ export default class Add extends React.Component{
                         </table>
                         {
                             specType == 2 &&
-                            <RUI.Button onClick = {this.addSpec}>添加</RUI.Button>
+                            <div className="add-sku-btn" onClick={this.addSpec}>
+                                <i></i>添加规格
+                            </div>
                         }
                     </div>
                 </div>
