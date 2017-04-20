@@ -1,4 +1,5 @@
 import OrderList from "./js/page/order/orderList";
+import OrderDetail from "./js/page/order/order-detail";
 import CommodityList from "./js/page/commodity/commodity-list";
 import AddCommodity from "./js/page/commodity/add-commodity";
 import CustomerList from "./js/page/customer/customer-list";
@@ -11,6 +12,10 @@ const config = [
     {
         path:"orderList",
         component:OrderList
+    },
+    {
+        path:"orderDetail",
+        component:OrderDetail
     },
     {
         path:"commodityList",
