@@ -18,7 +18,7 @@ export default class Detail extends React.Component{
                         <LabelText label = "公司名称：" text = "有一家公司"/>
                         <LabelText label = "订单号：" text = "12314573240"/>
                         <LabelText label = "订单状态：" text = "已发货"/>
-                        <LabelText label = "订单金额：" text = "1234.00"/>
+                        <LabelText label = "订单金额：" text = "1234.10"/>
                         <LabelText label = "订单时间：" text = "2017-4-20 14:53:59"/>
                     </div>
                     <h3 className="detail-title">商品信息</h3>
