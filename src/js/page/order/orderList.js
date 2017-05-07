@@ -17,6 +17,19 @@ export default class List extends React.Component{
                 pageSize:10,
                 totalNum:100,
             },
+            listRequest:{
+                userid:"",
+                keyword:"",
+                sign:1,
+                amountSort:1,
+                selectType:1
+            },
+            selectValue:[
+                {key:"全部",value:""},{key:"待审核",value:1},
+                {key:"待受理",value:2},{key:"待发货",value:3},
+                {key:"作废",value:4},{key:"已完成",value:5}
+            ],
+            defaultSelect:{key:"全部",value:""},
             list:[{
                 "order_no": "111111",
                 "clientname": "成都俊美化妆品",
@@ -39,9 +52,13 @@ export default class List extends React.Component{
         };
         this.check = this.check.bind(this);
         this.checkAll = this.checkAll.bind(this);
+        this.inputChange = this.inputChange.bind(this);
+        this.select = this.select.bind(this);
+        this.query = this.query.bind(this);
+        this.queryDetail = this.queryDetail.bind(this);
       }
     getList(){}
-    query(){
+    queryDetail(){
         hashHistory.push("orderDetail");
     }
     check(item,e){
@@ -91,8 +108,22 @@ export default class List extends React.Component{
                 return "";
         }
     }
+    inputChange(e){
+        let {listRequest} = this.state;
+        listRequest.keyword = e.target.value;
+    }
+    select(e){
+        let {listRequest,defaultSelect} = this.state;
+        defaultSelect = e;
+        listRequest.selectType = e.value;
+        console.log(listRequest)
+    }
+    query(){
+        let {listRequest} = this.state;
+        console.log(listRequest)
+    }
     render(){
-        let {pager,list,checkedAll} =this.state;
+        let {pager,list,checkedAll,selectValue,defaultSelect} =this.state;
         return(
             <div>
                 <Layout mark = "dd" bread = {["订单管理","订单列表"]}>
@@ -107,8 +138,13 @@ export default class List extends React.Component{
                         </RUI.Button>
                     </div>
                     <div className="search-div">
-                        <RUI.Input placeholder = "请输入订单号或公司名称"/>
-                        <RUI.Button className = "primary" >查询</RUI.Button>
+                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入订单号或公司名称"/>
+                        <label className="m-l-r-10">订单状态：</label>
+                        <RUI.Select  data = {selectValue}
+                                     className = "w-90 rui-theme-1 "
+                                     callback = {this.select}
+                                     value = {defaultSelect}/>
+                        <RUI.Button onClick = {this.query} className = "primary" >查询</RUI.Button>
                         <div className="right">
                             <RUI.Button onClick = {this.export}>导出</RUI.Button>
                         </div>
@@ -120,11 +156,13 @@ export default class List extends React.Component{
                                     <td className="col-15">
                                         <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>订单号</RUI.Checkbox>
                                     </td>
-                                    <td className="col-15">公司名称</td>
-                                    <td className="col-15">订单金额</td>
-                                    <td className="col-15">订单品牌</td>
-                                    <td className="col-15">下单时间</td>
+                                    <td className="col-10">公司名称</td>
+                                    <td className="col-10">订单金额</td>
+                                    <td className="col-10">订单品牌</td>
+                                    <td className="col-10">下单时间</td>
                                     <td className="col-10">状态</td>
+                                    <td className="col-10">备注</td>
+                                    <td className="col-10">经手人</td>
                                     <td className="col-15">操作</td>
                                 </tr>
                             </thead>
@@ -138,11 +176,13 @@ export default class List extends React.Component{
                                             </td>
                                             <td>{item.clientname}</td>
                                             <td>{item.order_money}</td>
-                                                 <td>{item.order_time}</td>
                                             <td>{item.brand}</td>
+                                            <td>{item.order_time}</td>
+                                            <td>{this.getState(item.status)}</td>
+                                            <td>{this.getState(item.status)}</td>
                                             <td>{this.getState(item.status)}</td>
                                             <td>
-                                                <a href="javascript:;" onClick = {this.query}>查看&nbsp;|</a>
+                                                <a href="javascript:;" onClick = {this.queryDetail}>查看&nbsp;|</a>
                                                 <a href="javascript:;">&nbsp;处理</a>
                                             </td>
                                         </tr>

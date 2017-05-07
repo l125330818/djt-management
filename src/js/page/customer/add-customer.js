@@ -147,17 +147,14 @@ export default class Add extends React.Component{
                             placeholder = "2~10个字符"
                             label = "联系方式："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"qq")}
-                            require = {true}
                             placeholder = "2~10个字符"
                             value = {request.qq}
                             reg = {qqReg}
                             label = "QQ："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"name")}
-                            require = {true}
                             placeholder = "2~10个字符"
                             label = "微信："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"name")}
-                            require = {true}
                             placeholder = "2~10个字符"
                             label = "邮箱："/>
                 <LabelDate require = {true}

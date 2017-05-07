@@ -20,9 +20,11 @@ export default class List extends React.Component{
                 userid:"",
                 keyword:"",
             },
-            sortState:1
+            sortState:1,
+            checkedAll:false,
         };
         this.sortFn = this.sortFn.bind(this);
+        this.checkAll = this.checkAll.bind(this);
     }
     getList(pageNo=1){
         let _this = this;
@@ -56,6 +58,37 @@ export default class List extends React.Component{
     }
     sortFn(){
         this.setState({sortState:!this.state.sortState});
+    }
+    check(item,e){
+        let {list,checkedAll} = this.state;
+        let temp = 0;
+        if(e.data.selected ==1){
+            item.checked = true;
+        }else{
+            item.checked = false;
+        }
+        list.map((list)=>{
+            if(list.checked){
+                temp +=1;
+            }
+        });
+        checkedAll = temp == list.length?true:false
+        this.setState({list:list,checkedAll});
+    }
+    checkAll(e){
+        let {list,checkedAll} = this.state;
+        if(e.data.selected==1){
+            list.map((item)=>{
+                item.checked = true;
+            });
+            checkedAll = true;
+        }else{
+            list.map((item)=>{
+                item.checked = false;
+            });
+            checkedAll = false;
+        }
+        this.setState({list,checkedAll});
     }
     render(){
         let {pager,sortState} =this.state;
