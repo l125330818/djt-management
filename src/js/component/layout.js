@@ -7,9 +7,39 @@ import Header from "./header";
 import moment from 'moment';
 import 'moment/locale/zh-cn';
 import RUI from "react-component-lib";
+import Message from "./message";
+import Pubsub from "../util/pubsub";
 moment.locale('zh-cn');
 window.commonUrl = "";
 export default class Layout extends React.Component{
+    // 构造
+      constructor(props) {
+        super(props);
+        // 初始状态
+        this.state = {
+            messageType : 'success',
+            messageMsg : '',
+        };
+      }
+    componentDidMount(){
+        var _this = this;
+        _this.pubsub_token = Pubsub.subscribe('showMsg', function (topic,msgArr) {
+            if(msgArr && msgArr.length>=2){
+                _this.showMsg(msgArr[0],msgArr[1]);
+            }
+        });
+    }
+    showMsg(type, msg) {
+        var _this = this;
+        window.setTimeout(function() {
+            _this.setState({
+                messageType : type,
+                messageMsg : msg
+            },function(){
+                _this.refs.message.open();
+            });
+        },200);
+    }
     render(){
         return(
             <div>
@@ -22,6 +52,12 @@ export default class Layout extends React.Component{
                         </div>
                     </div>
                 </div>
+                <Message
+                    ref="message"
+                    type={this.state.messageType}
+                    msg={this.state.messageMsg}
+                    key={new Date().getTime()}>
+                </Message>
             </div>
         )
     }

@@ -19,7 +19,7 @@ const Input = React.createClass({
                     value={this.props.default ||{}}
                     stuff={true}
                     callback = {(e)=>{this.props.callback && this.props.callback(e)}}
-                    className="rui-theme-1 w-245">
+                    className={"rui-theme-1 w-245 " + this.props.className}>
                 </RUI.Select>
                 {this.props.children}
             </div>

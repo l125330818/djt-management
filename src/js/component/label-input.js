@@ -13,7 +13,16 @@ const Input = React.createClass({
                         <i className="require">*</i>
                     }
                     {this.props.label || ""}</label>
-                <LimitInput  {...this.props}/>
+                {
+                    this.props.reg?
+                        <LimitInput  {...this.props}/>
+                        :
+                        <RUI.Input {...this.props}
+                            value = {this.props.value}
+                            disabled = {this.props.disabled || false}
+                            placeholder = {this.props.placeholder || ""}
+                            onChange = {(e)=>{this.props.onChange && this.props.onChange(e)}}/>
+                }
                 <span className="require m-l-10">{this.props.tips || ""}</span>
             </div>
         )

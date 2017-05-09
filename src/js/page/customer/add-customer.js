@@ -7,8 +7,10 @@ import LabelSelect from "../../component/label-select";
 import LabelDate from "../../component/label-date";
 import "../../library/cityData.js";
 import "../../../css/page/customer.scss"
-
-let qqReg = /^\d+$/
+import Pubsub from "../../util/pubsub";
+let qqReg = /^\d+$/;
+let accountReg = /^[0-9a-zA-Z]*$/g;
+let mailReg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 export default class Add extends React.Component{
     // 构造
       constructor(props) {
@@ -22,13 +24,35 @@ export default class Add extends React.Component{
             defaultProvince:{key:"请选择",value:0},
             defaultCity:{key:"请选择",value:0},
             defaultCounty:{key:"请选择",value:0},
+            defaultBrand:{key:"请选择",value:""},
+            province:"",
+            city:"",
+            county:"",
+            hasCounty:false,
             request:{
-                qq:""
+                userid:"",
+                clientname:"",
+                pername:"",
+                level:"",
+                account:"",
+                password:"",
+                tel:"",
+                email:"",
+                weixin:"",
+                province:"",
+                city:"",
+                county:"",
+                address:"",
+                addetial:"",
+                signtime:"",
+                remark:"",
             }
         };
         this.provinceChangeFn = this.provinceChangeFn.bind(this);
         this.cityChangeFn = this.cityChangeFn.bind(this);
         this.countyChangeFn = this.countyChangeFn.bind(this);
+        this.saveData = this.saveData.bind(this);
+        this.brandSelectFn = this.brandSelectFn.bind(this);
       }
     componentDidMount(){
         var proArr =  [{key:"请选择",value:0}];
@@ -41,10 +65,16 @@ export default class Add extends React.Component{
     changeInput(type,e){
         let {request} = this.state;
         request[type] = e.target.value;
-        this.setState({request});
+    }
+    accountInput(type,e){
+        let {request} = this.state;
+        request[type] = e.target.value;
+        this.setState({});
     }
     brandSelectFn(e){
-
+        let {request} = this.state;
+        request.level = e.value;
+        this.setState({defaultBrand:e});
     }
     provinceChangeFn(e){
         var value = e.value;
@@ -66,7 +96,7 @@ export default class Add extends React.Component{
         var province = this.state.province;
         var countyArr = [{key:"请选择",value:0}];
         if(value==0){
-            this.setState({countyData:countyArr,defaultCounty:{key:"请选择",value:0}});
+            this.setState({countyData:countyArr,defaultCounty:{key:"请选择",value:0},defaultCity:{key:"请选择",value:0}});
         }else{
             var countList = cityTool.getCountyList(province,value);
             if(countList.length){
@@ -86,31 +116,82 @@ export default class Add extends React.Component{
         this.setState({county:value,defaultCounty:{key:e.key,value:e.value}});
     }
     dateChange(){}
+    saveData(){
+        let {request} = this.state;
+        if(!this.checkValid()){
+            return;
+        }
+        console.log(request)
+        Pubsub.publish("showMsg",["wrong","请输入部门名称"]);
+    }
+    checkValid(){
+        let {request,province,defaultCity,defaultCounty,hasCounty} = this.state;
+        let flag = true;
+        let msg = "";
+        if(!request.clientname){
+            msg = "请输入公司名称";
+            flag = false;
+        }else if(!request.pername){
+            msg = "请输入姓名";
+            flag = false;
+        }else if(!request.level){
+            msg = "请选择代理等级";
+            flag = false;
+        }else if(!province){
+            msg = "请选择省级";
+            flag = false;
+        }else if(!defaultCity.value){
+            msg = "请选择市区";
+            flag = false;
+        }else if(hasCounty && !defaultCounty.value){
+            msg = "请选择县级";
+            flag = false;
+        }else if(!request.addetial){
+            msg = "请输入街道地址";
+            flag = false;
+        }else if(!request.tel){
+            msg = "请输入联系方式";
+            flag = false;
+        }else if(!request.account){
+            msg = "请输入帐号";
+            flag = false;
+        }else if(!request.password){
+            msg = "请输入密码";
+            flag = false;
+        }else if(!request.remark){
+            msg = "请输入备注";
+            flag = false;
+        }else{
+            msg = "";
+            flag = true;
+        }
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+        }
+        return flag;
+    }
     render(){
-        let {brandSelect,request,provinceData,defaultProvince,cityData,defaultCity,countyData,defaultCounty,hasCounty} = this.state;
+        let {brandSelect,request,provinceData,defaultProvince,cityData,defaultCity,countyData,defaultCounty,hasCounty,defaultBrand} = this.state;
         return(
             <Layout mark = "kh" bread = {["客户管理","新增客户"]}>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                <LabelInput onChange = {this.changeInput.bind(this,"clientname")}
                             require = {true}
+                            maxLength = {10}
                             placeholder = "2~10个字符"
                             label = "公司名称："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                <LabelInput onChange = {this.changeInput.bind(this,"pername")}
                             require = {true}
+                            maxLength = {10}
                             placeholder = "2~10个字符"
                             label = "姓名："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
-                            require = {true}
-                            placeholder = "2~10个字符"
-                            label = "帐号："/>
+
                 <LabelSelect require = {true}
                              label = "代理级别："
+                             className = "w-168"
                              data = {brandSelect}
                              callback = {this.brandSelectFn}
-                             default = {{key:"请选择",value:""}}/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
-                            require = {true}
-                            placeholder = "2~10个字符"
-                            label = "地址："/>
+                             default = {defaultBrand}/>
+
                 <div className="clearfix m-t-10">
                     <label className="left-label left"> <span className="require">*</span> 地址：</label>
                     <div>
@@ -142,33 +223,51 @@ export default class Add extends React.Component{
                         }
                     </div>
                 </div>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                <LabelInput onChange = {this.changeInput.bind(this,"addetial")}
                             require = {true}
-                            placeholder = "2~10个字符"
+                            placeholder = "请输入街道地址"
+                            label = "街道地址："/>
+                <LabelInput onChange = {this.accountInput.bind(this,"tel")}
+                            value = {request.tel}
+                            reg = {qqReg}
+                            maxLength = {11}
+                            placeholder = "请输入联系方式"
+                            require = {true}
                             label = "联系方式："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"qq")}
-                            placeholder = "2~10个字符"
+                <LabelInput onChange = {this.accountInput.bind(this,"qq")}
                             value = {request.qq}
                             reg = {qqReg}
+                            placeholder = "请输入QQ"
+                            maxLength = {11}
                             label = "QQ："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
-                            placeholder = "2~10个字符"
+                <LabelInput onChange = {this.changeInput.bind(this,"weixin")}
+                            placeholder = "请输入微信"
                             label = "微信："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
-                            placeholder = "2~10个字符"
+                <LabelInput onChange = {this.changeInput.bind(this,"email")}
+                            placeholder = "请输入邮箱"
                             label = "邮箱："/>
                 <LabelDate require = {true}
                            label = "签约时间："
                            onChange = {this.dateChange.bind(this)}/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                <LabelInput onChange = {this.accountInput.bind(this,"account")}
                             require = {true}
-                            placeholder = "2~10个字符"
+                            reg = {accountReg}
+                            value = {request.account}
+                            placeholder = "2~20位数字或字母"
+                            label = "帐号："/>
+                <LabelInput onChange = {this.changeInput.bind(this,"password")}
+                            require = {true}
+                            type = "password"
+                            maxLength = {20}
+                            placeholder = "6~20位数字或字母"
                             label = "密码："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                <LabelInput onChange = {this.changeInput.bind(this,"password")}
                             require = {true}
-                            placeholder = "2~10个字符"
+                            type = "password"
+                            maxLength = {20}
+                            placeholder = "6~20位数字或字母"
                             label = "确认密码："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                <LabelInput onChange = {this.changeInput.bind(this,"remark")}
                             require = {true}
                             placeholder = "请输入备注"
                             label = "备注："/>

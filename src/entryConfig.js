@@ -8,6 +8,7 @@ import AddCustomer from "./js/page/customer/add-customer";
 import NoticeList from "./js/page/notice/notice-list";
 import AddNotice from "./js/page/notice/add-notice";
 import RechargeList from "./js/page/customer/recharge-list";
+import AddOrder from "./js/page/order/add-order";
 const config = [
     {
         path:"orderList",
@@ -48,6 +49,10 @@ const config = [
     {
         path:"rechargeList",
         component:RechargeList
+    },
+    {
+        path:"addOrder",
+        component:AddOrder
     },
 ];
 export default config;

@@ -15,25 +15,41 @@ export default class Recharg extends React.Component{
         this.state = {
             checked:false,
             ChineseNum:"",
-            brandSelect:[{key:"一叶子",value:1},{key:"韩素",value:2}]
+            brandSelect:[{key:"一叶子",value:1},{key:"韩素",value:2}],
+            request:{
+                userid:"",
+                account:"",
+                brand_id:"",
+                money:"",
+            },
+            defaultBrand:{key:"请选择",value:""}
         };
         this.selectBrand = this.selectBrand.bind(this);
         this.checkChange = this.checkChange.bind(this);
+        this.recharge = this.recharge.bind(this);
       }
     checkChange(e){
         let checked = e.data.selected==1?true : false;
         this.setState({checked});
     }
-    selectBrand(){}
+    selectBrand(e){
+        let {request,defaultBrand} = this.state;
+        request.brand_id = e.value;
+        defaultBrand = e;
+        this.setState({defaultBrand});
+    }
     changeInput(type,e){
+        let {request} = this.state;
         let value = e.target.value;
-        console.log(value)
-
+        request[type] = value;
         let ChineseNum = changeNumMoneyToChinese(value);
         this.setState({ChineseNum});
     }
+    recharge(){
+console.log(this.state.request)
+    }
     render(){
-        let {checked,brandSelect,ChineseNum} = this.state;
+        let {checked,brandSelect,ChineseNum,defaultBrand} = this.state;
         return(
             <Layout mark = "kh" bread = {["客户管理","充值"]}>
                 <LabelText label = "公司名称：" text = "四川成都公司"/>
@@ -50,11 +66,18 @@ export default class Recharg extends React.Component{
                              label = {checked? "负充值品牌：": "充值品牌："}
                              data = {brandSelect}
                              callback = {this.selectBrand}
-                             default = {{key:"请选择",value:""}}/>
-                <LabelInput onChange = {this.changeInput.bind(this,"name")}
+                             default = {defaultBrand}/>
+                <LabelInput onChange = {this.changeInput.bind(this,"money")}
                             require = {true}
                             tips = {ChineseNum}
                             label = {checked? "负充值金额：": "充值金额："}/>
+                <div className="footer js-footer">
+                    <div className="left">
+                        <RUI.Button href="javascript:window.history.go(-1)">返回</RUI.Button>
+                        <RUI.Button className="primary" style={{marginLeft:"10px"}}
+                                    onClick={this.recharge}>充值</RUI.Button>
+                    </div>
+                </div>
             </Layout>
         )
     }
