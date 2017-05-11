@@ -50,6 +50,8 @@ export default class List extends React.Component{
                 "flag": 0
             }],
             ids:[],
+            companyList:[],
+            companyShow:false,
             checkedAll:false,
         };
         this.check = this.check.bind(this);
@@ -58,6 +60,19 @@ export default class List extends React.Component{
         this.select = this.select.bind(this);
         this.query = this.query.bind(this);
         this.queryDetail = this.queryDetail.bind(this);
+    }
+
+    componentDidMount() {
+        this.initEvent();
+    }
+    initEvent(){
+        let _this = this;
+        $(document).click(function(e){
+            var _con = $('.company-list');   // 设置目标区域
+            if(!_con.is(e.target) && _con.has(e.target).length === 0){
+                _this.setState({companyShow:false});
+            }
+        });
     }
     getList(){}
     queryDetail(){
@@ -109,14 +124,30 @@ export default class List extends React.Component{
         let {listRequest} = this.state;
         console.log(listRequest)
     }
+    inputChange(type,e){
+        if(e.target.value == "333"){
+            let companyList = [{key:"杭州新公司"},{key:"成都新公司"},{key:"四川新公司"},{key:"哈哈公司"},{key:1}]
+            this.setState({companyList,companyShow:true})
+        }
+    }
+    companyClick(){
+
+    }
     render(){
-        let {list,checkedAll,selectValue,defaultSelect} =this.state;
+        let {list,checkedAll,selectValue,defaultSelect,companyList,companyShow} =this.state;
         return(
             <div>
                 <Layout mark = "dd" bread = {["订单管理","添加订货单"]}>
-                    <div className="search-div">
+                    <div className="search-div relative">
                         <label className="m-l-r-10">公司：</label>
-                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入公司名称"/>
+                        <RUI.Input   onChange = {this.inputChange.bind(this,"company")} placeholder = "请输入公司名称"/>
+                        <ul className="company-list" style = {{display:companyShow?"block":"none"}}>
+                            {
+                                companyList.map((item,index)=>{
+                                    return (<li key = {index} onClick = {this.companyClick.bind(this,item)}>{item.key}</li>)
+                                })
+                            }
+                        </ul>
                         <label className="m-l-r-10">商品：</label>
                         <RUI.Input   onChange = {this.inputChange} placeholder = "请输入公司名称"/>
                         <label className="m-l-r-10">时间：</label>

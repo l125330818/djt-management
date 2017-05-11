@@ -15,6 +15,7 @@ export default class Nav extends React.Component{
             {mark:"sp",name:"商品管理",path:"/commodityList"},
             {mark:"tz",name:"通知管理",path:"/noticeList"},
             {mark:"cz",name:"充值记录",path:"/rechargeList"},
+            {mark:"cx",name:"万能查询",path:"/allSearchList"},
         ]
     };
     static propTypes = {

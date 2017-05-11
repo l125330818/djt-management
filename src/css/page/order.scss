@@ -106,3 +106,22 @@
     width: 50%;
   }
 }
+.company-list{
+  z-index: 999;
+  position: absolute;
+  left: 71px;
+  width: 168px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-top: none;
+  li{
+    padding-left: 10px;
+    cursor: pointer;
+    &:hover{
+      background-color: #f2f2f2;
+    }
+  }
+}
+.line-32{
+  line-height: 32px;
+}
