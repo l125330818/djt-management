@@ -21,7 +21,7 @@ export default class List extends React.Component{
             listRequest:{
                 userid: localStorage.userid || "",
                 keyword:"",
-                companyName:Data.userInfo.companyName || "",
+                companyName:localStorage.companyName || "",
                 pageNum:1,
                 selectType:1
             },
@@ -37,6 +37,7 @@ export default class List extends React.Component{
         this.search = this.search.bind(this);
         this.select = this.select.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.batchExport = this.batchExport.bind(this);
     }
     componentDidMount(){
         this.getList();
@@ -81,7 +82,7 @@ export default class List extends React.Component{
                 temp +=1;
             }
         });
-        checkedAll = temp == list.length?true:false
+        checkedAll = temp == list.length
         this.setState({list:list,checkedAll});
     }
     checkAll(e){
@@ -117,6 +118,22 @@ export default class List extends React.Component{
             this.getList();
         })
     }
+    batchExport(){
+        let {list} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.account);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择");
+            return;
+        }
+    }
+    checkDetail(account){
+        hashHistory.push(`customerDetail?account=${account}`);
+    }
     render(){
         let {pager,customerSort,list,checkedAll,listRequest,defaultSelect} =this.state;
         return(
@@ -133,6 +150,7 @@ export default class List extends React.Component{
                                      value = {defaultSelect}/>
                         <RUI.Button className = "primary" onClick = {this.search} >查询</RUI.Button>
                         <div className="right">
+                            <RUI.Button onClick = {this.batchExport}>批量导出</RUI.Button>
                             <RUI.Button onClick = {this.set}>余额设置</RUI.Button>
                             <RUI.Button onClick = {this.add} className = "primary">新增客户</RUI.Button>
 
@@ -169,18 +187,18 @@ export default class List extends React.Component{
                                 list.map((item,index)=>{
                                     return(
                                         <tr key = {index}>
-                                            <td>
+                                            <td className="text-left p-l-15">
                                                 <RUI.Checkbox onChange = {this.check.bind(this,item)}
                                                               selected = {item.checked?1:0}> {item.clientName}</RUI.Checkbox>
                                             </td>
-                                            <td>{item.pername}</td>
+                                            <td>{item.name}</td>
                                             <td>{item.account}</td>
                                             <td>{item.area}</td>
                                             <td>{item.level}</td>
                                             <td>{item.money}</td>
                                             <td>{item.money}</td>
                                             <td>
-                                                <a href="javascript:;">查看&nbsp;|</a>
+                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.account)}>查看&nbsp;|</a>
                                                 <a href="javascript:;" onClick = {this.recharge}>&nbsp;充值&nbsp; |</a>
                                                 <a href="javascript:;">&nbsp;禁用</a>
                                             </td>

@@ -8,6 +8,7 @@ import LabelDate from "../../component/label-date";
 import "../../library/cityData.js";
 import "../../../css/page/customer.scss"
 import Pubsub from "../../util/pubsub";
+import moment from 'moment';
 let qqReg = /^\d+$/;
 let accountReg = /^[0-9a-zA-Z]*$/g;
 let mailReg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
@@ -32,19 +33,15 @@ export default class Add extends React.Component{
             request:{
                 userid:localStorage.userid || "",
                 clientname:"",
-                pername:"",
+                name:"",
                 level:"",
                 account:"",
                 password:"",
                 tel:"",
                 email:"",
                 weixin:"",
-                province:"",
-                city:"",
-                county:"",
-                address:"",
                 addetial:"",
-                signtime:"",
+                singtime:moment(new Date()).format("YYYY-MM-DD"),
                 remark:"",
             }
         };
@@ -117,23 +114,28 @@ export default class Add extends React.Component{
     }
     dateChange(e){
         let {request} = this.state;
-        request.signtime = e;
+        request.singtime = e;
+        this.setState({request});
     }
     saveData(){
         let {request,province,city,county} = this.state;
         if(!this.checkValid()){
             return;
         }
-        request.province = province;
-        request.city = city;
-        request.county = county;
+        request.sheng = province;
+        request.shi = city;
+        request.qu = county;
         $.ajax({
             url:commonUrl + "/djt/web/clientmang/addclient.do",
             data:request,
             type:"post",
             dataType:"json",
-            success(){
-
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success","新增成功"]);
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
             }
         });
 
@@ -146,7 +148,7 @@ export default class Add extends React.Component{
         if(!request.clientname){
             msg = "请输入公司名称";
             flag = false;
-        }else if(!request.pername){
+        }else if(!request.name){
             msg = "请输入姓名";
             flag = false;
         }else if(!request.level){
@@ -194,7 +196,7 @@ export default class Add extends React.Component{
                             maxLength = {10}
                             placeholder = "2~10个字符"
                             label = "公司名称："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"pername")}
+                <LabelInput onChange = {this.changeInput.bind(this,"name")}
                             require = {true}
                             maxLength = {10}
                             placeholder = "2~10个字符"
@@ -263,11 +265,11 @@ export default class Add extends React.Component{
                             label = "邮箱："/>
                 <LabelDate require = {true}
                            label = "签约时间："
+                           value = {request.singtime}
+                           defaultValue = {request.singtime}
                            onChange = {this.dateChange.bind(this)}/>
-                <LabelInput onChange = {this.accountInput.bind(this,"account")}
+                <LabelInput onChange = {this.changeInput.bind(this,"account")}
                             require = {true}
-                            reg = {accountReg}
-                            value = {request.account}
                             placeholder = "2~20位数字或字母"
                             label = "帐号："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"password")}

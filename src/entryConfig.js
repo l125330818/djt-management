@@ -10,6 +10,7 @@ import AddNotice from "./js/page/notice/add-notice";
 import RechargeList from "./js/page/customer/recharge-list";
 import AddOrder from "./js/page/order/add-order";
 import AllSearchList from "./js/page/search/all-search";
+import CustomerDetail from "./js/page/customer/customer-detail";
 const config = [
     {
         path:"orderList",
@@ -58,6 +59,10 @@ const config = [
     {
         path:"allSearchList",
         component:AllSearchList
+    },
+    {
+        path:"customerDetail",
+        component:CustomerDetail
     }
 ];
 export default config;
