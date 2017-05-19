@@ -30,7 +30,7 @@ export default class Add extends React.Component{
             county:"",
             hasCounty:false,
             request:{
-                userid:"",
+                userid:localStorage.userid || "",
                 clientname:"",
                 pername:"",
                 level:"",
@@ -115,14 +115,29 @@ export default class Add extends React.Component{
         var value = e.value;
         this.setState({county:value,defaultCounty:{key:e.key,value:e.value}});
     }
-    dateChange(){}
-    saveData(){
+    dateChange(e){
         let {request} = this.state;
+        request.signtime = e;
+    }
+    saveData(){
+        let {request,province,city,county} = this.state;
         if(!this.checkValid()){
             return;
         }
+        request.province = province;
+        request.city = city;
+        request.county = county;
+        $.ajax({
+            url:commonUrl + "/djt/web/clientmang/addclient.do",
+            data:request,
+            type:"post",
+            dataType:"json",
+            success(){
+
+            }
+        });
+
         console.log(request)
-        Pubsub.publish("showMsg",["wrong","请输入部门名称"]);
     }
     checkValid(){
         let {request,province,defaultCity,defaultCounty,hasCounty} = this.state;

@@ -6,11 +6,13 @@ import Nav from "./nav";
 import Header from "./header";
 import moment from 'moment';
 import 'moment/locale/zh-cn';
-import RUI from "react-component-lib";
 import Message from "./message";
 import Pubsub from "../util/pubsub";
+import Data from "../component/Data";
 moment.locale('zh-cn');
-window.commonUrl = "";
+window.commonUrl = "https://www.djtserver.cn";
+window.userid = Data.userInfo.userid || "";
+console.log(Data)
 export default class Layout extends React.Component{
     // 构造
       constructor(props) {

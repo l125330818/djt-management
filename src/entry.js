@@ -1,7 +1,7 @@
 'use strict';
 import "./css/base.scss";
 import { Router, Route, hashHistory } from 'react-router';
-import Login from "./js/page/order/orderList";
+import Login from "./js/page/login";
 import config from "./entryConfig.js";
 //最终渲染
 ReactDOM.render((
