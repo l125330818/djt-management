@@ -18,6 +18,8 @@ export default class AntUpload extends React.Component{
         this.handlePreview = this.handlePreview.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.onSuccess = this.onSuccess.bind(this);
+        this.onRemove = this.onRemove.bind(this);
     }
 
     componentDidMount() {
@@ -34,9 +36,24 @@ export default class AntUpload extends React.Component{
             previewVisible: true,
         });
     }
-    handleChange(fileList){
-        console.log(fileList);
-        // this.setState({ fileList });
+    handleChange(info){
+
+    }
+
+    onSuccess(e,f){
+        let {fileList} = this.state;
+        f.url = e.data.imgurl;
+        fileList.push(f);
+        this.setState({fileList});
+    }
+    onRemove(file){
+        let {fileList} = this.state;
+        let id = file.uid;
+        let arr = fileList.filter((item)=>{
+            console.log(item,"o")
+            return item.uid != id;
+        });
+        this.setState({fileList:arr});
     }
     render(){
         const { previewVisible, previewImage, fileList } = this.state;
@@ -51,12 +68,13 @@ export default class AntUpload extends React.Component{
                 <Upload
                     action="https://www.djtserver.cn/djt/web/upload/upimg.do"
                     listType="picture-card"
+                    headers = {{authorization:"authorization-text"}}
                     fileList={fileList}
                     onPreview={this.handlePreview}
                     name = "img"
-                    withCredentials = {true}
-                    responseType = "json"
                     onChange={this.handleChange}
+                    onRemove = {this.onRemove}
+                    onSuccess = {this.onSuccess}
                 >
                     {fileList.length >= 3 ? null : uploadButton}
                 </Upload>

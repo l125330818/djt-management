@@ -28,7 +28,7 @@ export default class Upload extends React.Component{
     upload(node){
         let _this = this;
         new AjaxUpload(node,{
-            action: "/djt/web/upload/upimg.do",
+            action: "https://www.djtserver.cn/djt/web/upload/upimg.do",
             name: "img",
             responseType: "json",
             onChange(file){
@@ -38,7 +38,7 @@ export default class Upload extends React.Component{
                 }
             },
             onComplete:function(e,data){
-                console.log(1111);
+                console.log(data);
                 _this.props.callback && _this.props.callback("https://www.djtserver.cn/djt/images/1496302051124.jpg",_this.props.index);
                 _this.replace();
                 if(data.status == "0000"){

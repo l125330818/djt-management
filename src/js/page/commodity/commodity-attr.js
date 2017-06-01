@@ -39,7 +39,7 @@ export default class Attr extends React.Component{
     getList(){
         let {listRequest} = this.state;
         brandList(listRequest).then((data)=>{
-            this.setState({brandList:data});
+            this.setState({brandList:data.dataList});
         });
     }
     addBrand(){
