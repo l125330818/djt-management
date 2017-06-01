@@ -23,11 +23,31 @@ export default class Add extends React.Component{
             seriesDefault:{key:"请选择",value:""},
             specType:1,
             specArr:[{price:"",num:"",spec:"",volume:"",productCode:"",barCode:"",}],
+            request:{
+                goodsName : "",
+                desc1 : "haha",
+                desc2 : "",
+                desc3 : "",
+                brand : "",
+                series : "",
+                unit : "",
+                price : "",
+                size : "",
+                standard : "",
+                goodsNum : "",
+                barCode : "",
+                classify : "",
+                warn : "",
+                imgloc : "",
+                companyName : "",
+                remark : "",
+            }
         };
         this.uploadCallback = this.uploadCallback.bind(this);
         this.selectBrand = this.selectBrand.bind(this);
         this.groupChange = this.groupChange.bind(this);
         this.addSpec = this.addSpec.bind(this);
+        this.saveData = this.saveData.bind(this);
       }
 
     componentDidMount() {
@@ -41,12 +61,16 @@ export default class Add extends React.Component{
         })
     }
     uploadCallback(url,index){
-        console.log(index);
+        console.log(url);
         let {imgUrl} = this.state;
         imgUrl.push({url});
         this.setState({imgUrl});
     }
-    changeInput(){}
+    changeInput(type,e){
+        let {request} = this.state;
+        request[type] = e.target.value;
+        this.setState({});
+    }
     selectBrand(e){
         let {seriesSelect,seriesDefault} = this.state;
         console.log(e)
@@ -73,10 +97,18 @@ export default class Add extends React.Component{
         specArr.splice(0,index);
         this.setState({specArr});
     }
+    saveData(){
+        console.log(this.state.request)
+    }
+    limitChange(type,e){
+        let {request} = this.state;
+        request[type] = e.target.value;
+        this.setState({});
+    }
     render(){
-        let {imgUrl,brandSelect,brandDefault,seriesSelect,seriesDefault,specType,specArr} = this.state;
+        let {imgUrl,brandSelect,brandDefault,seriesSelect,seriesDefault,specType,specArr,request} = this.state;
         return(
-            <Layout mark = "sp" bread = {["商品管理","新增商品  "]}>
+            <Layout mark = "sp" bread = {["商品管理","新增商品"]}>
                 <div className="add-content">
                     <div className="clearfix">
                         <label className="left-label left"> <span className="require">*</span> 商品图片：</label>
@@ -89,10 +121,22 @@ export default class Add extends React.Component{
                         }
                         <Upload className = "add-upload" callback = {this.uploadCallback} isAdd = {true}/>
                     </div>
-                    <LabelInput onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "商品名称："/>
-                    <LabelArea onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "商品描述1："/>
-                    <LabelArea onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "商品描述2："/>
-                    <LabelArea onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "商品描述3："/>
+                    <LabelInput onChange = {this.changeInput.bind(this,"goodsName")}
+                                disabled = {true}
+                                require = {true}
+                                label = "商品名称："/>
+                    <LabelArea onChange = {this.changeInput.bind(this,"desc1")}
+                               value = {request.desc1}
+                               require = {true}
+                               label = "商品描述1："/>
+                    <LabelArea onChange = {this.changeInput.bind(this,"desc2")}
+                               value = {request.desc2}
+                               require = {true}
+                               label = "商品描述2："/>
+                    <LabelArea onChange = {this.changeInput.bind(this,"desc3")}
+                               value = {request.desc3}
+                               require = {true}
+                               label = "商品描述3："/>
                     <LabelSelect require = {true}
                                  label = "品牌："
                                  data = {brandSelect}
@@ -107,13 +151,19 @@ export default class Add extends React.Component{
                                  data = {seriesSelect}
                                  callback = {this.select}
                                  default = {seriesDefault}/>
-                    <LabelInput onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "分类："/>
-                    <LabelInput onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "单位："/>
+                    <LabelInput onChange = {this.changeInput.bind(this,"classify")}
+                                value = {request.classify}
+                                require = {true}
+                                label = "分类："/>
+                    <LabelInput onChange = {this.changeInput.bind(this,"unit")}
+                                value = {request.unit}
+                                require = {true}
+                                label = "单位："/>
                     <div className = "m-t-10">
                         <label className="left-label left"> <span className="require">*</span>库存以及价格：</label>
                         <RUI.RadioGroup ref="radioGroup" onChange={this.groupChange} defaultValue={"1"}>
-                            <RUI.Radio value="1">同一规格</RUI.Radio>
-                            <RUI.Radio value="2">多规格</RUI.Radio>
+                            <RUI.Radio value="1">统一规格</RUI.Radio>
+                            {/*<RUI.Radio value="2">多规格</RUI.Radio>*/}
                         </RUI.RadioGroup>
                     </div>
                     <div className = "m-t-10 m-l-110">
@@ -121,7 +171,7 @@ export default class Add extends React.Component{
                             <thead>
                                 <tr>
                                     <td>价格(元)</td>
-                                    <td>总数量</td>
+                                    <td>规格</td>
                                     {
                                         specType==2 &&
                                         <td>规格</td>
@@ -141,19 +191,29 @@ export default class Add extends React.Component{
                                     <tr>
                                         <td>
                                             <LimitInput reg = {moneyReg}
+                                                        value = {request.price}
+                                                        onChange = {this.limitChange.bind(this,"price")}
                                                         className = "w-80"/>
                                         </td>
                                         <td>
-                                            <LimitInput className = "w-80"/>
+                                            <RUI.Input  onChange = {this.changeInput.bind(this,"standard")}
+                                                        value = {request.standard}
+                                                        className = "w-80"/>
                                         </td>
                                         <td>
-                                            <RUI.Input className = "w-80"/>
+                                            <RUI.Input  onChange = {this.changeInput.bind(this,"size")}
+                                                        value = {request.size}
+                                                        className = "w-80"/>
                                         </td>
                                         <td>
-                                            <RUI.Input className = "w-80"/>
+                                            <RUI.Input  onChange = {this.changeInput.bind(this,"goodsNum")}
+                                                        value = {request.goodsNum}
+                                                        className = "w-80"/>
                                         </td>
                                         <td>
-                                            <RUI.Input className = "w-80"/>
+                                            <RUI.Input  onChange = {this.changeInput.bind(this,"barCode")}
+                                                        value = {request.barCode}
+                                                        className = "w-80"/>
                                         </td>
                                     </tr>
                                     :

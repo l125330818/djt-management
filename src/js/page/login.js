@@ -23,6 +23,7 @@ const Login = React.createClass({
         }
     },
     login(){
+        hashHistory.push("/orderList");
         let userName = this.refs.userName.getValue();
         let password = this.refs.pwd.getValue();
         $.ajax({
@@ -36,8 +37,8 @@ const Login = React.createClass({
                     GlobalData.userInfo = data.data;
                     localStorage.userName = userName;
                     localStorage.password = password;
-                    localStorage.userid = data.data.userid;
-                    localStorage.companyName = data.data.companyName;
+                    localStorage.userid = data.data.userid || "";
+                    localStorage.companyName = data.data.companyName || "";
                 }else{
                     RUI.DialogManager.alert(data.msg);
                     GlobalData.userInfo = {};
@@ -54,10 +55,10 @@ const Login = React.createClass({
                 <div className="login-box">
                     <h3>代经通</h3>
                     <div className="user-div">
-                        <RUI.Input className = "w-280" defaultValue = {userName || ""} ref = "userName" placeholder = "用户名"></RUI.Input>
+                        <RUI.Input className = "w-280" defaultValue = {userName || ""} ref = "userName" placeholder = "用户名"/>
                     </div>
                     <div>
-                        <RUI.Input className = "w-280" defaultValue = {password || ""} ref = "pwd" type = "password" placeholder = "密码"></RUI.Input>
+                        <RUI.Input className = "w-280" defaultValue = {password || ""} ref = "pwd" type = "password" placeholder = "密码"/>
                     </div>
                     <div className="login-btn">
                         <RUI.Button className = "w-280 green" onClick = {this.login}>登录</RUI.Button>

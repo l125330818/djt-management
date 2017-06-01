@@ -4,7 +4,11 @@
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
-import {hashHistory} from "react-router"
+import {hashHistory} from "react-router";
+import {commodityList} from "../ajax/commodityAjax";
+import DatePicker  from 'antd/lib/date-picker';
+const { RangePicker } = DatePicker;
+import moment from 'moment';
 export default class List extends React.Component{
     // 构造
     constructor(props) {
@@ -16,15 +20,56 @@ export default class List extends React.Component{
                 pageSize:10,
                 totalNum:100,
             },
+            listRequest:{
+                companyName:localStorage.companyName || "",
+                brand:"",
+                series:"",
+                classify:"",
+                goodsName:"",
+                stdata : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
+                endata : moment(new Date()).format("YYYY-MM-DD"),
+                keyword:"",
+                pageNum:1,
+                pageSize:10,
+
+            }
         };
         this.add = this.add.bind(this);
+        this.manageAttr = this.manageAttr.bind(this);
+        this.disabledDate = this.disabledDate.bind(this);
+        this.datePickerChange = this.datePickerChange.bind(this);
     }
-    getList(){}
+    componentDidMount(){
+        this.getList();
+    }
+    getList(pageNo=1){
+        let _this = this;
+        let {pager,listRequest} = this.state;
+        commodityList(this.state.listRequest).then((data)=>{
+            this.setState({list:data.dataList || []});
+        })
+    }
     add(){
         hashHistory.push("addCommodity");
     }
+    manageAttr(){
+        hashHistory.push("commodityAttr");
+    }
+    disabledDate(current){
+        return current && current.valueOf() > Date.now();
+    }
+    datePickerChange(e,d){
+        let {listRequest} = this.state;
+        listRequest.stdata = d[0];
+        listRequest.endata = d[1];
+        listRequest.pageNum = 1;
+        console.log(listRequest)
+        this.setState({listRequest},()=>{
+            this.getList();
+        });
+    }
     render(){
-        let {pager} =this.state;
+        let {pager,listRequest} =this.state;
         return(
             <div>
                 <Layout mark = "sp" bread = {["商品管理","商品列表"]}>
@@ -44,8 +89,17 @@ export default class List extends React.Component{
                            <RUI.Button>批量下架</RUI.Button>
                            <RUI.Button>批量删除</RUI.Button>
                            <RUI.Button onClick = {this.add} className = "primary">新增商品</RUI.Button>
+                           <RUI.Button onClick = {this.manageAttr} className = "primary">属性管理</RUI.Button>
 
                        </div>
+                    </div>
+                    <div>
+                        <RangePicker onChange={this.datePickerChange}
+                                     disabledDate={this.disabledDate}
+                                     size = "large"
+                                     allowClear ={false}
+                                     value={[moment(listRequest.stdata, 'YYYY-MM-DD'),moment(listRequest.endata, 'YYYY-MM-DD')]}
+                                     defaultValue={[moment(listRequest.stdata, 'YYYY-MM-DD'),moment(listRequest.endata, 'YYYY-MM-DD')]}/>
                     </div>
 
                     <div className="order-content">

@@ -23,12 +23,13 @@ export default class Upload extends React.Component{
             let node = $(ReactDOM.findDOMNode(this.refs.replace));
             this.upload(node);
         }
+
     }
     upload(node){
         let _this = this;
         new AjaxUpload(node,{
-            action: "/product/upload.htm",
-            name: "upload",
+            action: "/djt/web/upload/upimg.do",
+            name: "img",
             responseType: "json",
             onChange(file){
                 if(!/\.(gif|bmp|jpg|jpeg|png|GIF|JPG|PNG|image)$/.test(file)){
@@ -37,15 +38,18 @@ export default class Upload extends React.Component{
                 }
             },
             onComplete:function(e,data){
-                console.log(node);
-                _this.props.callback && _this.props.callback("https://ss1.baidu.com/-4o3dSag_xI4khGko9WTAnF6hhy/image/h%3D200/sign=34b533d9b63eb1355bc7b0bb961fa8cb/9f510fb30f2442a76d8ce294db43ad4bd1130204.jpg",_this.props.index);
+                console.log(1111);
+                _this.props.callback && _this.props.callback("https://www.djtserver.cn/djt/images/1496302051124.jpg",_this.props.index);
                 _this.replace();
-                if(data.success){
-                    _this.props.callback && _this.props.callback(null,data.resultMap.picPath,_this.props.index);
+                if(data.status == "0000"){
+                    _this.props.callback && _this.props.callback(null,data.data.imgurl,_this.props.index);
                 }else{
-                    Pubsub.publish("showMsg",["wrong",data.description]);
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
-            }
+            },
+            error(){
+                console.log(333)
+        }
         });
     }
     componentWillReceiveProps(nextProps){

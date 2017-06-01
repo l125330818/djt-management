@@ -35,7 +35,7 @@ export default class List extends React.Component{
             dataType:"json",
             data:{d:JSON.stringify(listRequest),pageNo:pageNo,pageSize:10},
             success(data){
-                if(data.code == "0000"){
+                if(data.status == "0000"){
                     pager.currentPage = pageNo;
                     pager.totalNum = data.resultMap.iTotalDisplayRecords;
                     _this.setState({

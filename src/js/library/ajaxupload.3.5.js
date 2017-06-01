@@ -251,13 +251,13 @@ window.Ajax_upload = window.AjaxUpload = function(button, options){
 		this._settings[i] = options[i];
 	}
 	/***  ****/
-    if(this._settings.action.indexOf("http://")>=0){
+    if(this._settings.action.indexOf("https://")>=0){
         //有可能不在统一域
         var domainName=document.domain;
-        if(document.domain.indexOf("berbon.com")>=0 && this._settings.action.indexOf(domainName)<0)
+        if(document.domain.indexOf("djtserver.cn")>=0 && this._settings.action.indexOf(domainName)<0)
         {
             //跨域
-            document.domain="berbon.com";
+            document.domain="djtserver.cn";
         }
     }
 	this._createInput();

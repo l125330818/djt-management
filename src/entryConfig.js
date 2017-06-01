@@ -11,10 +11,20 @@ import RechargeList from "./js/page/customer/recharge-list";
 import AddOrder from "./js/page/order/add-order";
 import AllSearchList from "./js/page/search/all-search";
 import CustomerDetail from "./js/page/customer/customer-detail";
+import CommodityAttr from "./js/page/commodity/commodity-attr";
+import SeriesList from "./js/page/commodity/commodity-series";
 const config = [
     {
         path:"orderList",
         component:OrderList
+    },
+    {
+        path:"commodityAttr",
+        component:CommodityAttr
+    },
+    {
+        path:"seriesList",
+        component:SeriesList
     },
     {
         path:"orderDetail",

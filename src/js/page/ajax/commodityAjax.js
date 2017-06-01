@@ -2,10 +2,10 @@
  * Created by Administrator on 2017-5-9.
  */
 import Pubsub from "../../util/pubsub";
-export function customerList(paramType){
+export function commodityList(paramType){
     return $.ajax({
-        url:commonUrl+"/djt/web/clientmang/showlist.do",
-        type:"get",
+        url:commonUrl+"/djt/web/goodsmang/goodslist.do",
+        type:"post",
         dataType:"json",
         data:paramType,
     }).then((data)=>{
@@ -17,10 +17,10 @@ export function customerList(paramType){
         }
     })
 }
-export function customerDetail(paramType){
+export function brandList(paramType){
     return $.ajax({
-        url:commonUrl+"/djt/web/clientmang/details.do",
-        type:"get",
+        url:commonUrl+"/djt/web/goodsmang/brandlist.do",
+        type:"post",
         dataType:"json",
         data:paramType,
     }).then((data)=>{
@@ -32,9 +32,9 @@ export function customerDetail(paramType){
         }
     })
 }
-export function reset(paramType){
+export function seriesList(paramType){
     return $.ajax({
-        url:commonUrl+"/djt/web/clientmang/resetpwd.do",
+        url:commonUrl+"/djt/web/goodsmang/seriserlist.do",
         type:"post",
         dataType:"json",
         data:paramType,

@@ -52,7 +52,7 @@ a{ text-decoration:none; }
 .w-245 {width: 245px !important; }
 .left-label {
   line-height: 32px;
-  width: 90px;
+  width: 91px;
   display: inline-block;
   text-align: right;
   margin-right: 20px; }
@@ -126,4 +126,11 @@ a{ text-decoration:none; }
 }
 .text-left{
   text-align: left;
+}
+input[disabled]{
+  background-color: #efefef;
+  cursor:not-allowed !important;
+}
+.ant-calendar-picker-input:hover{
+  border-color:#4a9df8 !important;
 }

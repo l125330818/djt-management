@@ -71,6 +71,17 @@
   .right-menu{
     float: right;
     margin-right: 10px;
-    cursor: pointer;
+    cursor: default;
+
   }
+}
+.ant-upload-select-picture-card i {
+  font-size: 28px;
+  color: #999;
+}
+
+.ant-upload-select-picture-card .ant-upload-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
 }
