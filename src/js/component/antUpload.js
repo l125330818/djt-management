@@ -13,7 +13,6 @@ export default class AntUpload extends React.Component{
         this.state = {
             previewVisible: false,
             previewImage: '',
-            fileList: [],
         };
         this.handlePreview = this.handlePreview.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
@@ -21,7 +20,9 @@ export default class AntUpload extends React.Component{
         this.onSuccess = this.onSuccess.bind(this);
         this.onRemove = this.onRemove.bind(this);
     }
-
+    static defaultProps={
+        fileList : []
+    };
     componentDidMount() {
 
 
@@ -41,26 +42,27 @@ export default class AntUpload extends React.Component{
     }
 
     onSuccess(e,f){
-        let {fileList} = this.state;
+        let {removePreview,fileList} = this.props;
         f.url = e.data.imgurl;
         fileList.push(f);
-        this.setState({fileList});
+        removePreview && $(".anticon-eye-o").remove();
+        this.props.callback && this.props.callback(fileList);
     }
     onRemove(file){
-        let {fileList} = this.state;
+        let {fileList} = this.props;
         let id = file.uid;
         let arr = fileList.filter((item)=>{
-            console.log(item,"o")
             return item.uid != id;
         });
-        this.setState({fileList:arr});
+        this.props.callback && this.props.callback(arr);
     }
     render(){
-        const { previewVisible, previewImage, fileList } = this.state;
+        const { previewVisible, previewImage,  } = this.state;
+        const {length,fileList} = this.props;
         const uploadButton = (
             <div>
                 <Icon type="plus" />
-                <div className="ant-upload-text">Upload</div>
+                <div className="ant-upload-text">上传</div>
             </div>
         );
         return (
@@ -68,7 +70,6 @@ export default class AntUpload extends React.Component{
                 <Upload
                     action="https://www.djtserver.cn/djt/web/upload/upimg.do"
                     listType="picture-card"
-                    headers = {{authorization:"authorization-text"}}
                     fileList={fileList}
                     onPreview={this.handlePreview}
                     name = "img"
@@ -76,7 +77,7 @@ export default class AntUpload extends React.Component{
                     onRemove = {this.onRemove}
                     onSuccess = {this.onSuccess}
                 >
-                    {fileList.length >= 3 ? null : uploadButton}
+                    {fileList.length >= length ? null : uploadButton}
                 </Upload>
                 <Modal visible={previewVisible} footer={null} onCancel={this.handleCancel}>
                     <img alt="example" style={{ width: '100%' }} src={previewImage} />

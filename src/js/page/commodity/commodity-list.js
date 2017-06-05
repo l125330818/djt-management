@@ -26,18 +26,20 @@ export default class List extends React.Component{
                 series:"",
                 classify:"",
                 goodsName:"",
-                stdata : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
-                endata : moment(new Date()).format("YYYY-MM-DD"),
+                stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
+                endate : moment(new Date()).format("YYYY-MM-DD"),
                 keyword:"",
                 pageNum:1,
                 pageSize:10,
 
-            }
+            },
+            list:[]
         };
         this.add = this.add.bind(this);
         this.manageAttr = this.manageAttr.bind(this);
         this.disabledDate = this.disabledDate.bind(this);
         this.datePickerChange = this.datePickerChange.bind(this);
+        this.search = this.search.bind(this);
     }
     componentDidMount(){
         this.getList();
@@ -60,30 +62,48 @@ export default class List extends React.Component{
     }
     datePickerChange(e,d){
         let {listRequest} = this.state;
-        listRequest.stdata = d[0];
-        listRequest.endata = d[1];
+        listRequest.stdate = d[0];
+        listRequest.endate = d[1];
         listRequest.pageNum = 1;
-        console.log(listRequest)
+        this.setState({listRequest},()=>{
+            this.getList();
+        });
+    }
+    checkDetail(item){
+        hashHistory.push(`addCommodity?type=check&goodsId=${item.goodsId}`)
+    }
+    inputChange(type,e){
+        let {listRequest} = this.state;
+        listRequest[type] = e.target.value;
+        this.setState({listRequest});
+    }
+    search(){
+        let {listRequest} = this.state;
+        listRequest.pageNum = 1;
         this.setState({listRequest},()=>{
             this.getList();
         });
     }
     render(){
-        let {pager,listRequest} =this.state;
+        let {pager,listRequest,list} =this.state;
         return(
             <div>
                 <Layout mark = "sp" bread = {["商品管理","商品列表"]}>
                     <div className="search-div clearfix">
                         <div className="left">
                             <span>品牌：</span>
-                            <RUI.Input className = "search-input"  placeholder = "请输入品牌"/>
+                            <RUI.Input className = "search-input"
+                                       onChange = {this.inputChange.bind(this,"brand")} placeholder = "请输入品牌"/>
                             <span>系列：</span>
-                            <RUI.Input className = "search-input"  placeholder = "请输入系列"/>
+                            <RUI.Input className = "search-input"
+                                       onChange = {this.inputChange.bind(this,"series")} placeholder = "请输入系列"/>
                             <span>分类：</span>
-                            <RUI.Input className = "search-input"  placeholder = "请输入分类"/>
-                            <span>商品分类：</span>
-                            <RUI.Input className = "search-input" placeholder = "请输入商品分类"/>
-                            <RUI.Button className = "primary" >查询</RUI.Button>
+                            <RUI.Input className = "search-input"
+                                       onChange = {this.inputChange.bind(this,"classify")} placeholder = "请输入分类"/>
+                            <span>商品名称：</span>
+                            <RUI.Input className = "search-input"
+                                       onChange = {this.inputChange.bind(this,"goodsName")} placeholder = "请输入商品名称"/>
+                            <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
                         </div>
                        <div className="right">
                            <RUI.Button>批量下架</RUI.Button>
@@ -98,8 +118,8 @@ export default class List extends React.Component{
                                      disabledDate={this.disabledDate}
                                      size = "large"
                                      allowClear ={false}
-                                     value={[moment(listRequest.stdata, 'YYYY-MM-DD'),moment(listRequest.endata, 'YYYY-MM-DD')]}
-                                     defaultValue={[moment(listRequest.stdata, 'YYYY-MM-DD'),moment(listRequest.endata, 'YYYY-MM-DD')]}/>
+                                     value={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}
+                                     defaultValue={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}/>
                     </div>
 
                     <div className="order-content">
@@ -122,46 +142,33 @@ export default class List extends React.Component{
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <RUI.Checkbox>商品名称</RUI.Checkbox>
-                                    </td>
-                                    <td>品牌</td>
-                                    <td>哈哈系列</td>
-                                    <td>分类</td>
-                                    <td>盒</td>
-                                    <td>13.2</td>
-                                    <td>1000</td>
-                                    <td>1000</td>
-                                    <td>2017-04-16 10:29:36</td>
-                                    <td>上架</td>
-                                    <td>
-                                        <a href="javascript:;">查看&nbsp;|</a>
-                                        <a href="javascript:;">&nbsp;修改&nbsp; |</a>
-                                        <a href="javascript:;">&nbsp;下架&nbsp;|</a>
-                                        <a href="javascript:;">&nbsp;删除</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <RUI.Checkbox>商品名称</RUI.Checkbox>
-                                    </td>
-                                    <td>品牌</td>
-                                    <td>哈哈系列</td>
-                                    <td>分类</td>
-                                    <td>盒</td>
-                                    <td>13.2</td>
-                                    <td>1000</td>
-                                    <td>1000</td>
-                                    <td>2017-04-16 10:29:36</td>
-                                    <td>上架</td>
-                                    <td>
-                                        <a href="javascript:;">查看&nbsp;|</a>
-                                        <a href="javascript:;">&nbsp;修改&nbsp; |</a>
-                                        <a href="javascript:;">&nbsp;下架&nbsp;|</a>
-                                        <a href="javascript:;">&nbsp;删除</a>
-                                    </td>
-                                </tr>
+                            {
+                                list.length>0 && list.map((item,index)=>{
+                                    return(
+                                        <tr key = {index}>
+                                            <td>
+                                                <RUI.Checkbox>{item.goodsName}</RUI.Checkbox>
+                                            </td>
+                                            <td>{item.brand}</td>
+                                            <td>{item.series}</td>
+                                            <td>{item.classify}</td>
+                                            <td>{item.unit}</td>
+                                            <td>{item.price}</td>
+                                            <td>{item.goodsLeft}</td>
+                                            <td>{item.sellNum}</td>
+                                            <td>{item.updateTime}</td>
+                                            <td>{item.status==0?"下架":"上架"}</td>
+                                            <td>
+                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item)}>查看&nbsp;|</a>
+                                                <a href="javascript:;">&nbsp;修改&nbsp; |</a>
+                                                <a href="javascript:;">&nbsp;{item.status==0?"上架":"下架"}&nbsp;|</a>
+                                                <a href="javascript:;">&nbsp;删除</a>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            }
+
                             </tbody>
                         </table>
                         <Pager onPage ={this.getList} {...pager}/>

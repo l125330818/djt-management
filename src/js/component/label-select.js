@@ -15,6 +15,7 @@ const Input = React.createClass({
                     }
                     {this.props.label || ""}</label>
                 <RUI.Select
+                    {...this.props}
                     data={this.props.data || []}
                     value={this.props.default ||{}}
                     stuff={true}

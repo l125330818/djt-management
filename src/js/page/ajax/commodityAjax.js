@@ -47,3 +47,18 @@ export function seriesList(paramType){
         }
     })
 }
+export function commodityDetail(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/web/goodsmang/showgoods.do",
+        type:"post",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        if(data.status == "0000"){
+            return data.data;
+        }else{
+            Pubsub.publish("showMsg",["wrong",data.msg]);
+            return data;
+        }
+    })
+}

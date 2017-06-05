@@ -5,7 +5,8 @@ import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
 import {seriesList} from "../ajax/commodityAjax";
-import Upload from "../../component/upload";
+import AntUpload from "../../component/antUpload";
+import Pubsub from "../../util/pubsub"
 
 export default class Attr extends React.Component{
     constructor(props){
@@ -22,30 +23,37 @@ export default class Attr extends React.Component{
                 brand:"",
                 imgloc:""
             },
+            listRequest:{
+                companyName:localStorage.companyName || "",
+                pageNum:1,
+                pageSize:10,
+                brand:this.props.location.query.brand || ""
+            },
             addType:2,
-            dialogInput:""
+            dialogInput:"",
+            imgloc:"",
+            file:[]
         };
         this.brand = this.props.location.query.brand || ""
         this.addBrand = this.addBrand.bind(this);
         this.dialogSubmit = this.dialogSubmit.bind(this);
+        this.uploadCallback = this.uploadCallback.bind(this);
     }
     componentDidMount(){
         this.getList();
     }
     getList(){
-        let request = {
-            companyName:localStorage.companyName || "",
-            brand:this.brand
-        };
-        seriesList(request).then((data)=>{
-            this.setState({brandList:data});
+        let {listRequest} = this.state;
+        seriesList(listRequest).then((data)=>{
+            this.setState({brandList:data.dataList});
         });
     }
     addBrand(){
         this.refs.dialog.show();
     }
-    uploadCallback(){
-
+    uploadCallback(file){
+        let imgloc = file.length?file[0].url : "";
+        this.setState({imgloc,file});
     }
     inputChange(e){
         this.setState({dialogInput:e.target.value});
@@ -56,7 +64,50 @@ export default class Attr extends React.Component{
         });
     }
     dialogSubmit(){
-        console.log(this.state.dialogInput)
+        let _this = this;
+        let {dialogInput,imgloc} = this.state;
+        let request = {
+            companyName:localStorage.companyName || "",
+            brand:this.brand,
+            series:dialogInput,
+            imgloc:imgloc,
+        };
+        $.ajax({
+            url:commonUrl+"/djt/web/goodsmang/addseriser.do",
+            type:"post",
+            dataType:"json",
+            data:request,
+            success(data){
+                if(data.status == "0000"){
+                    _this.getList();
+                    Pubsub.publish("showMsg",["success","操作成功"]);
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        });
+    }
+    delete(item){
+        let _this = this;
+        let request = {
+            companyName:localStorage.companyName || "",
+            series : item.series,
+            brand:this.brand
+        };
+        $.ajax({
+            url:commonUrl+"/djt/web/goodsmang/deleteseries.do",
+            type:"post",
+            dataType:"json",
+            data:request,
+            success(data){
+                if(data.status == "0000"){
+                    _this.getList();
+                    Pubsub.publish("showMsg",["success","删除成功"]);
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        });
     }
     render(){
         let {pager,brandList,addType} = this.state;
@@ -73,9 +124,9 @@ export default class Attr extends React.Component{
                         <table className="table">
                             <thead>
                             <tr>
-                                <td >品牌</td>
-                                <td >图片</td>
-                                <td className="col-20">操作</td>
+                                <td className="col-30">系列</td>
+                                <td className="col-30">图片</td>
+                                <td>操作</td>
                             </tr>
                             </thead>
                             <tbody>
@@ -84,10 +135,11 @@ export default class Attr extends React.Component{
                                     return (
                                         <tr key = {i}>
                                             <td>{item.series}</td>
-                                            <td>{item.imgloc}</td>
+                                            <td className="p-t-b-20">
+                                                <img className="brand-img" src={item.imgloc} alt=""/>
+                                            </td>
                                             <td>
-                                                <a href="javascript:;">查看&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;删除</a>
+                                                <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
                                             </td>
                                         </tr>
                                     )
@@ -115,7 +167,9 @@ export default class Attr extends React.Component{
                                     <RUI.Input onChange = {this.inputChange.bind(this)}
                                                className = "left add-dialog-input"
                                                placeholder = {addType==1?"请输入品牌":"请输入系列"}/>
-                                    <Upload className = "add-upload" callback = {this.uploadCallback} isAdd = {true}/>
+                                    <AntUpload length = {1}
+                                               callback = {this.uploadCallback}
+                                               removePreview = {true}/>
                                 </div>
 
                             </div>

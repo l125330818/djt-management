@@ -8,6 +8,11 @@ import LabelInput from "../../component/label-input";
 import LabelArea from "../../component/label-textarea";
 import LabelSelect from "../../component/label-select";
 import LimitInput from "../../component/limitInput";
+import AntUpload from "../../component/antUpload";
+import Pubsub from "../../util/pubsub";
+import {hashHistory} from "react-router";
+
+import {brandList,commodityDetail,seriesList} from "../ajax/commodityAjax";
 const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,6}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
 
 export default class Add extends React.Component{
@@ -24,7 +29,7 @@ export default class Add extends React.Component{
             specType:1,
             specArr:[{price:"",num:"",spec:"",volume:"",productCode:"",barCode:"",}],
             request:{
-                goodsName : "",
+                goodsname : "",
                 desc1 : "haha",
                 desc2 : "",
                 desc3 : "",
@@ -34,37 +39,53 @@ export default class Add extends React.Component{
                 price : "",
                 size : "",
                 standard : "",
-                goodsNum : "",
-                barCode : "",
+                goodsnum : "",
+                barcode : "",
                 classify : "",
                 warn : "",
                 imgloc : "",
-                companyName : "",
+                companyname : localStorage.companyName || "",
                 remark : "",
-            }
+            },
+            file:[]
         };
-        this.uploadCallback = this.uploadCallback.bind(this);
+        this.type = this.props.location.query.type;
+        this.goodsId = this.props.location.query.goodsId;
         this.selectBrand = this.selectBrand.bind(this);
         this.groupChange = this.groupChange.bind(this);
         this.addSpec = this.addSpec.bind(this);
         this.saveData = this.saveData.bind(this);
+        this.uploadCallback = this.uploadCallback.bind(this);
+        this.selectSeries = this.selectSeries.bind(this);
       }
 
     componentDidMount() {
-        let arr = [
-            {key:"阿玛尼",value:1,son:[{key:"阿玛尼1",value:4},{key:"阿玛尼2",value:5}]},
-            {key:"一叶子",value:2,son:[{key:"一叶子1",value:6},{key:"一叶子2",value:7}]},
-            {key:"哈哈哈",value:3,son:[{key:"哈哈哈1",value:8},{key:"哈哈哈2",value:9}]},
-        ];
-        this.setState({
-            brandSelect:arr
-        })
+        let request = {goodsId:this.goodsId};
+        if(this.type){
+            commodityDetail(request).then((data)=>{
+                let imgArr = JSON.parse(data.imgloc);
+                let arr = [];
+                imgArr.map((item,i)=>{
+                    arr.push({uid:i,url:item})
+                });
+                this.setState({
+                    request:data,
+                    file:arr,
+                    brandDefault:{key:data.brand,value:data.brand},
+                    seriesDefault:{key:data.series,value:data.series}});
+            });
+        }
+        this.getBrandList();
     }
-    uploadCallback(url,index){
-        console.log(url);
-        let {imgUrl} = this.state;
-        imgUrl.push({url});
-        this.setState({imgUrl});
+    getBrandList(){
+        let brandRequest = {pageNum:1,pageSize:100000, companyName:localStorage.companyName || "",};
+        brandList(brandRequest).then((data)=>{
+            let brandSelect = [];
+            data.dataList.map((item)=>{
+                brandSelect.push({key:item.brand,value:item.brand})
+            });
+            this.setState({brandSelect});
+        });
     }
     changeInput(type,e){
         let {request} = this.state;
@@ -72,16 +93,26 @@ export default class Add extends React.Component{
         this.setState({});
     }
     selectBrand(e){
-        let {seriesSelect,seriesDefault} = this.state;
-        console.log(e)
+        let {request} = this.state;
         if(e.value){
-            seriesSelect = e.son;
+            // seriesSelect = e.son;
+            let brand = e.value;
+            request.brand = brand;
+            let seriesRequest = {pageNum:1,pageSize:100000, companyName:localStorage.companyName || "",brand};
+            seriesList(seriesRequest).then((data)=>{
+                let seriesSelect = [];
+                data.dataList.map((item)=>{
+                    seriesSelect.push({key:item.series,value:item.series})
+                });
+                this.setState({seriesSelect,brandDefault:e});
+            })
+
         }else{
-            seriesSelect = [];
-            seriesDefault = {key:"请选择",value:""}
+            let seriesSelect = [];
+            let seriesDefault = {key:"请选择",value:""}
+            this.setState({seriesSelect,seriesDefault});
+
         }
-        console.log(seriesSelect)
-        this.setState({seriesSelect,seriesDefault});
     }
     groupChange(e){
         let specType  = e.data;
@@ -98,31 +129,61 @@ export default class Add extends React.Component{
         this.setState({specArr});
     }
     saveData(){
-        console.log(this.state.request)
+        let {request} = this.state;
+        request.goodsId = this.goodsId;
+        let url = this.type?"/djt/web/goodsmang/updategoods.do":"/djt/web/goodsmang/addgoods.do";
+        let _this = this;
+        $.ajax({
+            url:commonUrl+url,
+            type:"post",
+            dataType:"json",
+            data:request,
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success","新增成功"]);
+                    setTimeout(()=>{
+                        hashHistory.push("commodityList");
+                    },1000)
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        });
     }
     limitChange(type,e){
         let {request} = this.state;
         request[type] = e.target.value;
         this.setState({});
     }
+    uploadCallback(file){
+        let {request} = this.state;
+        let arr = [];
+        file.map((item)=>{
+            arr.push(item.url);
+        });
+        request.imgloc = JSON.stringify(arr);
+        this.setState({file});
+    }
+    selectSeries(e){
+        let {request} = this.state;
+        request.series = e.value;
+        this.setState({seriesDefault:e});
+    }
     render(){
-        let {imgUrl,brandSelect,brandDefault,seriesSelect,seriesDefault,specType,specArr,request} = this.state;
+        let {file,brandSelect,brandDefault,seriesSelect,seriesDefault,specType,specArr,request} = this.state;
+        let type = this.type;
         return(
             <Layout mark = "sp" bread = {["商品管理","新增商品"]}>
                 <div className="add-content">
                     <div className="clearfix">
                         <label className="left-label left"> <span className="require">*</span> 商品图片：</label>
-                        {
-                            imgUrl.map((item,index)=>{
-                                return (
-                                    <Upload className = "add-upload" index = {index} callback = {this.uploadCallback} url = {item.url}/>
-                                )
-                            })
-                        }
-                        <Upload className = "add-upload" callback = {this.uploadCallback} isAdd = {true}/>
+                        <AntUpload fileList = {file}
+                                   callback = {this.uploadCallback}
+                                   length = {6} />
                     </div>
-                    <LabelInput onChange = {this.changeInput.bind(this,"goodsName")}
-                                disabled = {true}
+                    <LabelInput onChange = {this.changeInput.bind(this,"goodsname")}
+                                value = {request.goodsname}
+                                disable = {!!type}
                                 require = {true}
                                 label = "商品名称："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc1")}
@@ -140,25 +201,36 @@ export default class Add extends React.Component{
                     <LabelSelect require = {true}
                                  label = "品牌："
                                  data = {brandSelect}
+                                 disable = {!!type}
                                  callback = {this.selectBrand}
                                  default = {brandDefault}>
-                        <RUI.Button className = "primary">新增品牌/系列</RUI.Button>
                     </LabelSelect>
 
 
                     <LabelSelect require = {true}
                                  label = "系列："
                                  data = {seriesSelect}
-                                 callback = {this.select}
+                                 callback = {this.selectSeries}
+                                 disable = {!!type}
                                  default = {seriesDefault}/>
                     <LabelInput onChange = {this.changeInput.bind(this,"classify")}
                                 value = {request.classify}
                                 require = {true}
+                                disable = {!!type}
                                 label = "分类："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"unit")}
                                 value = {request.unit}
                                 require = {true}
+                                disable = {!!type}
                                 label = "单位："/>
+                    <LabelInput onChange = {this.changeInput.bind(this,"warn")}
+                                value = {request.warn}
+                                require = {true}
+                                label = "库存预警设置："/>
+                    <LabelInput onChange = {this.changeInput.bind(this,"remark")}
+                                require = {true}
+                                value = {request.remark}
+                                label = "备注："/>
                     <div className = "m-t-10">
                         <label className="left-label left"> <span className="require">*</span>库存以及价格：</label>
                         <RUI.RadioGroup ref="radioGroup" onChange={this.groupChange} defaultValue={"1"}>
@@ -206,13 +278,15 @@ export default class Add extends React.Component{
                                                         className = "w-80"/>
                                         </td>
                                         <td>
-                                            <RUI.Input  onChange = {this.changeInput.bind(this,"goodsNum")}
-                                                        value = {request.goodsNum}
+                                            <RUI.Input  onChange = {this.changeInput.bind(this,"goodsnum")}
+                                                        value = {request.goodsnum}
+                                                        disable = {!!type}
                                                         className = "w-80"/>
                                         </td>
                                         <td>
-                                            <RUI.Input  onChange = {this.changeInput.bind(this,"barCode")}
-                                                        value = {request.barCode}
+                                            <RUI.Input  onChange = {this.changeInput.bind(this,"barcode")}
+                                                        value = {request.barcode}
+                                                        disable = {!!type}
                                                         className = "w-80"/>
                                         </td>
                                     </tr>
