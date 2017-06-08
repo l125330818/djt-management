@@ -23,7 +23,8 @@ export default class List extends React.Component{
                 keyword:"",
                 companyName:localStorage.companyName || "",
                 pageNum:1,
-                selectType:1
+                selectType:1,
+                pageSize:10
             },
             list:[],
             defaultSelect:{key:"正常",value:1},
@@ -49,8 +50,11 @@ export default class List extends React.Component{
             this.setState({list:data.dataList || []});
         })
     }
-    recharge(){
-        hashHistory.push("recharge");
+    recharge(clientId){
+        hashHistory.push(`recharge?clientId=${clientId}`);
+    }
+    modify(clientId){
+        hashHistory.push(`addCustomer?clientId=${clientId}`);
     }
     add(){
         hashHistory.push("addCustomer");
@@ -131,8 +135,8 @@ export default class List extends React.Component{
             return;
         }
     }
-    checkDetail(account){
-        hashHistory.push(`customerDetail?account=${account}`);
+    checkDetail(clientId){
+        hashHistory.push(`customerDetail?clientId=${clientId}`);
     }
     render(){
         let {pager,customerSort,list,checkedAll,listRequest,defaultSelect} =this.state;
@@ -198,8 +202,9 @@ export default class List extends React.Component{
                                             <td>{item.money}</td>
                                             <td>{item.money}</td>
                                             <td>
-                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.account)}>查看&nbsp;|</a>
-                                                <a href="javascript:;" onClick = {this.recharge}>&nbsp;充值&nbsp; |</a>
+                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.clientId)}>查看&nbsp;|</a>
+                                                <a href="javascript:;" onClick = {this.modify.bind(this,item.clientId)}>&nbsp;修改&nbsp; |</a>
+                                                <a href="javascript:;" onClick = {this.recharge.bind(this,item.clientId)}>&nbsp;充值&nbsp; |</a>
                                                 <a href="javascript:;">&nbsp;禁用</a>
                                             </td>
                                         </tr>

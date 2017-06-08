@@ -14,6 +14,8 @@ const Input = React.createClass({
         this.props.onChange && this.props.onChange(d);
     },
     render(){
+        let {showTime} = this.props;
+        let format = this.props.format || "YYYY-MM-DD";
         return(
             <div className = "m-t-10 clearfix">
 
@@ -25,9 +27,12 @@ const Input = React.createClass({
                     {this.props.label || ""}</label>
                 <DatePicker onChange={this.datePickerChange}
                             size = "large"
+                            format = {format}
+                            showTime = {showTime}
                             allowClear ={false}
-                            value={moment(this.props.value, 'YYYY-MM-DD')}
-                            defaultValue={moment(this.props.defaultValue, 'YYYY-MM-DD')}/>
+                            disabled = {this.props.disabled}
+                            value={moment(this.props.value, format)}
+                            defaultValue={moment(this.props.defaultValue, format)}/>
             </div>
         )
     }

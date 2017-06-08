@@ -16,6 +16,8 @@ export function changeNumMoneyToChinese(money) {
     if (money == "") {
         return "";
     }
+    var flag = money.indexOf("-")>=0;
+    money = flag?money.replace(/-/g,""):money;
     money = parseFloat(money);
     if (money >= maxNum) {
         alert('超出最大处理数字');
@@ -72,6 +74,7 @@ export function changeNumMoneyToChinese(money) {
     } else if (DecimalNum == '') {
         ChineseStr += cnInteger;
     }
+    ChineseStr = flag?("负"+ChineseStr):ChineseStr
     return ChineseStr;
 
 }

@@ -7,6 +7,8 @@ import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
 import {commodityList} from "../ajax/commodityAjax";
 import DatePicker  from 'antd/lib/date-picker';
+import Pubsub from "../../util/pubsub";
+
 const { RangePicker } = DatePicker;
 import moment from 'moment';
 export default class List extends React.Component{
@@ -18,7 +20,7 @@ export default class List extends React.Component{
             pager:{
                 currentPage:1,
                 pageSize:10,
-                totalNum:100,
+                totalNum:0,
             },
             listRequest:{
                 companyName:localStorage.companyName || "",
@@ -33,6 +35,7 @@ export default class List extends React.Component{
                 pageSize:10,
 
             },
+            checkedAll:false,
             list:[]
         };
         this.add = this.add.bind(this);
@@ -40,6 +43,9 @@ export default class List extends React.Component{
         this.disabledDate = this.disabledDate.bind(this);
         this.datePickerChange = this.datePickerChange.bind(this);
         this.search = this.search.bind(this);
+        this.checkAll = this.checkAll.bind(this);
+        this.batchDelete = this.batchDelete.bind(this);
+        this.goPage = this.goPage.bind(this);
     }
     componentDidMount(){
         this.getList();
@@ -48,8 +54,17 @@ export default class List extends React.Component{
         let _this = this;
         let {pager,listRequest} = this.state;
         commodityList(this.state.listRequest).then((data)=>{
-            this.setState({list:data.dataList || []});
+            pager.totalNum = data.count;
+            pager.currentPage = pageNo;
+            this.setState({list:data.dataList || [],});
         })
+    }
+    goPage(page){
+        let {listRequest} = this.state;
+        listRequest.pageNum = page;
+        this.setState({},()=>{
+            this.getList(page);
+        });
     }
     add(){
         hashHistory.push("addCommodity");
@@ -69,6 +84,9 @@ export default class List extends React.Component{
             this.getList();
         });
     }
+    modify(item){
+        hashHistory.push(`addCommodity?type=edit&goodsId=${item.goodsId}`)
+    }
     checkDetail(item){
         hashHistory.push(`addCommodity?type=check&goodsId=${item.goodsId}`)
     }
@@ -84,8 +102,124 @@ export default class List extends React.Component{
             this.getList();
         });
     }
+    checkAll(e){
+        let {list,checkedAll} = this.state;
+        if(e.data.selected==1){
+            list.map((item)=>{
+                item.checked = true;
+            });
+            checkedAll = true;
+        }else{
+            list.map((item)=>{
+                item.checked = false;
+            });
+            checkedAll = false;
+        }
+        this.setState({list,checkedAll});
+    }
+    check(item,e){
+        let {list,checkedAll} = this.state;
+        let temp = 0;
+        if(e.data.selected ==1){
+            item.checked = true;
+        }else{
+            item.checked = false;
+        }
+        list.map((list)=>{
+            if(list.checked){
+                temp +=1;
+            }
+        });
+        checkedAll = temp == list.length?true:false
+        this.setState({list:list,checkedAll});
+    }
+    batchDelete(){
+        let {list} = this.state;
+        let _this = this;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.goodsId);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择商品");
+            return;
+        }
+       this.deleteAjax(arr);
+    }
+    delete(item){
+        let arr = [];
+        arr.push(item.goodsId);
+        this.deleteAjax(arr);
+    }
+    deleteAjax(id){
+        let _this = this;
+        RUI.DialogManager.confirm({
+            message:"您确定要删除吗？",
+            title:"删除商品",
+            submit(){
+                $.ajax({
+                    url:commonUrl + "/djt/web/goodsmang/batchdelete.do",
+                    type:"post",
+                    dataType:"json",
+                    data:{goodsId:JSON.stringify(id)},
+                    success(data){
+                        if(data.status == "0000"){
+                            Pubsub.publish("showMsg",["success","删除成功"]);
+                            let {listRequest} = _this.state;
+                            listRequest.pageNum = 1;
+                            _this.setState({checkedAll:false},()=>{
+                                _this.getList();
+                            });
+                        }else{
+                            Pubsub.publish("showMsg",["wrong",data.msg]);
+                        }
+                    }
+                })
+            }
+        });
+    }
+    groundAjax(id,status){
+        let _this = this;
+        $.ajax({
+            url:commonUrl + "/djt/web/goodsmang/batchupdate.do",
+            type:"post",
+            dataType:"json",
+            data:{goodsId:JSON.stringify(id),status:status},
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success",status==1?"下架成功":"上架成功"]);
+                    _this.setState({checkedAll:false});
+                    _this.getList();
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        })
+    }
+    batchGround(type){
+        let {list} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.goodsId);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择商品");
+            return;
+        }
+        this.groundAjax(arr,type);
+    }
+    ground(item){
+        let arr = [];
+        arr.push(item.goodsId);
+        let status = item.status==0?1:0;
+        this.groundAjax(arr,status);
+    }
     render(){
-        let {pager,listRequest,list} =this.state;
+        let {pager,listRequest,list,checkedAll} =this.state;
         return(
             <div>
                 <Layout mark = "sp" bread = {["商品管理","商品列表"]}>
@@ -106,8 +240,9 @@ export default class List extends React.Component{
                             <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
                         </div>
                        <div className="right">
-                           <RUI.Button>批量下架</RUI.Button>
-                           <RUI.Button>批量删除</RUI.Button>
+                           <RUI.Button onClick = {this.batchGround.bind(this,0)}>批量上架</RUI.Button>
+                           <RUI.Button onClick = {this.batchGround.bind(this,1)}>批量下架</RUI.Button>
+                           <RUI.Button onClick = {this.batchDelete}>批量删除</RUI.Button>
                            <RUI.Button onClick = {this.add} className = "primary">新增商品</RUI.Button>
                            <RUI.Button onClick = {this.manageAttr} className = "primary">属性管理</RUI.Button>
 
@@ -127,7 +262,7 @@ export default class List extends React.Component{
                             <thead>
                                 <tr>
                                     <td className="col-10">
-                                        <RUI.Checkbox>商品名称</RUI.Checkbox>
+                                        <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>商品名称</RUI.Checkbox>
                                     </td>
                                     <td className="col-8">品牌</td>
                                     <td className="col-10">系列</td>
@@ -147,7 +282,8 @@ export default class List extends React.Component{
                                     return(
                                         <tr key = {index}>
                                             <td>
-                                                <RUI.Checkbox>{item.goodsName}</RUI.Checkbox>
+                                                <RUI.Checkbox onChange = {this.check.bind(this,item)}
+                                                              selected = {item.checked?1:0}> {item.goodsName}</RUI.Checkbox>
                                             </td>
                                             <td>{item.brand}</td>
                                             <td>{item.series}</td>
@@ -157,12 +293,12 @@ export default class List extends React.Component{
                                             <td>{item.goodsLeft}</td>
                                             <td>{item.sellNum}</td>
                                             <td>{item.updateTime}</td>
-                                            <td>{item.status==0?"下架":"上架"}</td>
+                                            <td>{item.status==0?"上架":"下架"}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkDetail.bind(this,item)}>查看&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;修改&nbsp; |</a>
-                                                <a href="javascript:;">&nbsp;{item.status==0?"上架":"下架"}&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;删除</a>
+                                                <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;修改&nbsp; |</a>
+                                                <a href="javascript:;" onClick = {this.ground.bind(this,item)}>&nbsp;{item.status==0?"下架":"上架"}&nbsp;|</a>
+                                                <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
                                             </td>
                                         </tr>
                                     )
@@ -171,7 +307,7 @@ export default class List extends React.Component{
 
                             </tbody>
                         </table>
-                        <Pager onPage ={this.getList} {...pager}/>
+                        <Pager onPage ={this.goPage} {...pager}/>
                     </div>
                 </Layout>
             </div>

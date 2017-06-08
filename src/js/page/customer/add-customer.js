@@ -6,9 +6,11 @@ import LabelInput from "../../component/label-input";
 import LabelSelect from "../../component/label-select";
 import LabelDate from "../../component/label-date";
 import "../../library/cityData.js";
-import "../../../css/page/customer.scss"
+import "../../../css/page/customer.scss";
+import {customerDetail} from "../ajax/customerAjax";
 import Pubsub from "../../util/pubsub";
 import moment from 'moment';
+import {hashHistory} from "react-router";
 let qqReg = /^\d+$/;
 let accountReg = /^[0-9a-zA-Z]*$/g;
 let mailReg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
@@ -40,7 +42,7 @@ export default class Add extends React.Component{
                 tel:"",
                 email:"",
                 weixin:"",
-                addetial:"",
+                addtail:"",
                 singtime:moment(new Date()).format("YYYY-MM-DD"),
                 remark:"",
             }
@@ -50,6 +52,7 @@ export default class Add extends React.Component{
         this.countyChangeFn = this.countyChangeFn.bind(this);
         this.saveData = this.saveData.bind(this);
         this.brandSelectFn = this.brandSelectFn.bind(this);
+        this.clientId = this.props.location.query.clientId;
       }
     componentDidMount(){
         var proArr =  [{key:"请选择",value:0}];
@@ -58,6 +61,43 @@ export default class Add extends React.Component{
             proArr.push({key:provinceList[i].name,value:provinceList[i].value});
         }
         this.setState({provinceData:proArr});
+        if(this.clientId){
+            this.getDetail();
+        }
+    }
+    getDetail(){
+        let clientId = this.clientId;
+        customerDetail({clientId}).then((data)=>{
+            let ClientInfo = data.ClientInfo;
+            let level = this.getLevel(ClientInfo.level);
+            this.setState({
+                request:ClientInfo,
+                defaultProvince:{key:ClientInfo.sheng,value:ClientInfo.sheng},
+                defaultCity:{key:ClientInfo.shi,value:ClientInfo.shi},
+                defaultCounty:{key:ClientInfo.qu,value:ClientInfo.qu},
+                defaultBrand:{key:level,value:ClientInfo.level},
+                hasCounty:ClientInfo.qu?true:false,
+                province:ClientInfo.sheng,
+                city:ClientInfo.shi,
+                county:ClientInfo.qu,
+            })
+        })
+    }
+    getLevel(type){
+        switch(type * 1){
+            case 1 :
+                return "一级代理";
+            case 2 :
+                return "二级代理";
+            case 3 :
+                return "三级代理";
+            case 4 :
+                return "四级代理";
+            case 5 :
+                return "五级代理";
+            default:
+                return "";
+        }
     }
     changeInput(type,e){
         let {request} = this.state;
@@ -132,6 +172,9 @@ export default class Add extends React.Component{
             dataType:"json",
             success(data){
                 if(data.status == "0000"){
+                    setTimeout(()=>{
+                        hashHistory.push("customerList");
+                    },1000);
                     Pubsub.publish("showMsg",["success","新增成功"]);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
@@ -142,6 +185,7 @@ export default class Add extends React.Component{
         console.log(request)
     }
     checkValid(){
+
         let {request,province,defaultCity,defaultCounty,hasCounty} = this.state;
         let flag = true;
         let msg = "";
@@ -163,7 +207,7 @@ export default class Add extends React.Component{
         }else if(hasCounty && !defaultCounty.value){
             msg = "请选择县级";
             flag = false;
-        }else if(!request.addetial){
+        }else if(!request.addetail){
             msg = "请输入街道地址";
             flag = false;
         }else if(!request.tel){
@@ -189,15 +233,19 @@ export default class Add extends React.Component{
     }
     render(){
         let {brandSelect,request,provinceData,defaultProvince,cityData,defaultCity,countyData,defaultCounty,hasCounty,defaultBrand} = this.state;
+        let clientId =this.clientId;
         return(
             <Layout mark = "kh" bread = {["客户管理","新增客户"]}>
                 <LabelInput onChange = {this.changeInput.bind(this,"clientname")}
                             require = {true}
+                            value = {request.clientname}
                             maxLength = {10}
+                            disable = {!!clientId}
                             placeholder = "2~10个字符"
                             label = "公司名称："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"name")}
                             require = {true}
+                            value = {request.name}
                             maxLength = {10}
                             placeholder = "2~10个字符"
                             label = "姓名："/>
@@ -215,6 +263,7 @@ export default class Add extends React.Component{
                         <RUI.Select
                             data={provinceData}
                             value={defaultProvince}
+                            disable = {!!clientId}
                             className="rui-theme-1 province-select"
                             stuff={true}
                             event={"click"}
@@ -223,6 +272,7 @@ export default class Add extends React.Component{
                         <RUI.Select
                             data={cityData}
                             value={defaultCity}
+                            disable = {!!clientId}
                             className="rui-theme-1 province-select"
                             stuff={true}
                             event={"click"}
@@ -232,6 +282,7 @@ export default class Add extends React.Component{
                             hasCounty&&<RUI.Select
                                 data={countyData}
                                 value={defaultCounty}
+                                disable = {!!clientId}
                                 className="rui-theme-1 province-select"
                                 stuff={false}
                                 event={"click"}
@@ -240,8 +291,10 @@ export default class Add extends React.Component{
                         }
                     </div>
                 </div>
-                <LabelInput onChange = {this.changeInput.bind(this,"addetial")}
+                <LabelInput onChange = {this.changeInput.bind(this,"addetail")}
                             require = {true}
+                            value = {request.addetail}
+                            disable = {!!clientId}
                             placeholder = "请输入街道地址"
                             label = "街道地址："/>
                 <LabelInput onChange = {this.accountInput.bind(this,"tel")}
@@ -258,35 +311,48 @@ export default class Add extends React.Component{
                             maxLength = {11}
                             label = "QQ："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"weixin")}
+                            value = {request.weixin}
                             placeholder = "请输入微信"
                             label = "微信："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"email")}
                             placeholder = "请输入邮箱"
+                            value = {request.weixin}
                             label = "邮箱："/>
                 <LabelDate require = {true}
                            label = "签约时间："
+                           disabled = {!!clientId}
                            value = {request.singtime}
                            defaultValue = {request.singtime}
                            onChange = {this.dateChange.bind(this)}/>
                 <LabelInput onChange = {this.changeInput.bind(this,"account")}
                             require = {true}
+                            value = {request.account}
+                            disable = {!!clientId}
                             placeholder = "2~20位数字或字母"
                             label = "帐号："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"password")}
-                            require = {true}
-                            type = "password"
-                            maxLength = {20}
-                            placeholder = "6~20位数字或字母"
-                            label = "密码："/>
-                <LabelInput onChange = {this.changeInput.bind(this,"password")}
-                            require = {true}
-                            type = "password"
-                            maxLength = {20}
-                            placeholder = "6~20位数字或字母"
-                            label = "确认密码："/>
+                {
+                    !clientId &&
+                    <LabelInput onChange = {this.changeInput.bind(this,"password")}
+                                require = {true}
+                                type = "password"
+                                maxLength = {20}
+                                placeholder = "6~20位数字或字母"
+                                label = "密码："/>
+                }
+
+                {
+                    !clientId &&
+                    <LabelInput onChange = {this.changeInput.bind(this,"password")}
+                                require = {true}
+                                type = "password"
+                                maxLength = {20}
+                                placeholder = "6~20位数字或字母"
+                                label = "确认密码："/>
+                }
                 <LabelInput onChange = {this.changeInput.bind(this,"remark")}
                             require = {true}
                             placeholder = "请输入备注"
+                            value = {request.remark}
                             label = "备注："/>
                 <div className="footer js-footer">
                     <div className="left">

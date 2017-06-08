@@ -17,7 +17,7 @@ export default class Attr extends React.Component{
             pager:{
                 currentPage:1,
                 pageSize:10,
-                totalNum:100,
+                totalNum:0,
             },
             brandList:[],
             brand:"",
@@ -35,14 +35,24 @@ export default class Attr extends React.Component{
         this.dialogSubmit = this.dialogSubmit.bind(this);
         this.uploadCallback = this.uploadCallback.bind(this);
         this.delete = this.delete.bind(this);
+        this.goPage = this.goPage.bind(this);
     }
     componentDidMount(){
         this.getList();
     }
-    getList(){
-        let {listRequest} = this.state;
+    getList(pageNo = 1){
+        let {listRequest,pager} = this.state;
         brandList(listRequest).then((data)=>{
+            pager.totalNum = data.count;
+            pager.currentPage = pageNo;
             this.setState({brandList:data.dataList});
+        });
+    }
+    goPage(page){
+        let {listRequest} = this.state;
+        listRequest.pageNum = page;
+        this.setState({},()=>{
+            this.getList(page);
         });
     }
     addBrand(){
@@ -96,25 +106,33 @@ export default class Attr extends React.Component{
     }
     delete(item){
         let _this = this;
-        let request = {
-            companyName:localStorage.companyName || "",
-            brand : item.brand
-        };
-        $.ajax({
-            url:commonUrl+"/djt/web/goodsmang/deletebrand.do",
-            type:"post",
-            dataType:"json",
-            data:request,
-            success(data){
-                if(data.status == "0000"){
-                    _this.getList();
-                    Pubsub.publish("showMsg",["success","删除成功"]);
 
-                }else{
-                    Pubsub.publish("showMsg",["wrong",data.msg]);
-                }
+        RUI.DialogManager.confirm({
+           message:"您确定要删除吗？",
+            title:"删除品牌",
+            submit(){
+                let request = {
+                    companyName:localStorage.companyName || "",
+                    brand : item.brand
+                };
+                $.ajax({
+                    url:commonUrl+"/djt/web/goodsmang/deletebrand.do",
+                    type:"post",
+                    dataType:"json",
+                    data:request,
+                    success(data){
+                        if(data.status == "0000"){
+                            _this.getList();
+                            Pubsub.publish("showMsg",["success","删除成功"]);
+
+                        }else{
+                            Pubsub.publish("showMsg",["wrong",data.msg]);
+                        }
+                    }
+                });
             }
         });
+
     }
     render(){
         let {pager,brandList,addType,imgloc,brand,file,dialogInput} = this.state;
@@ -155,7 +173,7 @@ export default class Attr extends React.Component{
 
                             </tbody>
                         </table>
-                        <Pager onPage ={this.getList} {...pager}/>
+                        <Pager onPage ={this.goPage} {...pager}/>
                         <RUI.Dialog ref="dialog" title={addType==1?"新增品牌":"新增系列"}
                                     draggable={false}
                                     buttons="submit,cancel"

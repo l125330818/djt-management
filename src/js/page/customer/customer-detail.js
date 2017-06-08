@@ -4,38 +4,29 @@
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import LabelText from "../../component/label-text";
-import {reset} from "../ajax/customerAjax";
+import {reset,customerDetail} from "../ajax/customerAjax";
 import Pubsub from "../../util/pubsub";
 
 export default class Detail extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            "detail": {
-                "clientname": "聚美优品化妆品",
-                "pername": "吴系挂",
-                "level": 2 ,
-                "account": "1436864169",
-                "tel": "17311111111",
-                "email":"123@163.com",
-                "qq":"123456",
-                "weixin":"weixin",
-                "address":"xx省xx市xx区",
-                "addetail":"xx街道xx",
-                "signtime":"2017-12-12 17:50",
-                "remark":"备注",
-                "balance":[
-                    {
-                        "brand":"品牌A",
-                        "money":1000.0
-                    }
-                ]
-            }
+            detail:{},
+            accountInfo:[]
         }
         this.reset = this.reset.bind(this);
     }
     componentDidMount(){
-
+        this.getDetail();
+    }
+    getDetail(){
+        let clientId = this.props.location.query.clientId;
+        customerDetail({clientId}).then((data)=>{
+            this.setState({
+                detail:data.ClientInfo,
+                accountInfo:data.AccountInfo,
+            })
+        })
     }
     getState(type){
         switch(type * 1){
@@ -59,27 +50,33 @@ export default class Detail extends React.Component{
             Pubsub.publish("showMsg",["success","重置密码成功"])
         });
     }
+    getAddressStr(detail){
+        return detail.sheng + detail.shi + detail.qu + detail.addetail
+    }
     render(){
-        let {detail} = this.state;
+        let {detail,accountInfo} = this.state;
         return(
             <Layout mark = "kh" bread = {["客户管理","客户详情"]}>
                 <div className="order-detail">
                     <h3 className="detail-title">客户信息</h3>
                     <div className="bottom-line">
                         <LabelText label = "公司名称：" text ={detail.clientname}/>
-                        <LabelText label = "客户姓名：" text = {detail.pername}/>
+                        <LabelText label = "客户姓名：" text = {detail.name}/>
                         <LabelText label = "代理级别：" text = {this.getState(detail.level)}/>
                         <LabelText label = "账号：" text = {detail.account}/>
                         <LabelText label = "联系方式：" text = {detail.tel}/>
                         <LabelText label = "Email：" text = {detail.email}/>
                         <LabelText label = "QQ：" text = {detail.qq}/>
                         <LabelText label = "微信：" text = {detail.weixin}/>
-                        <LabelText label = "地址：" text = {detail.address}/>
-                        <LabelText label = "签约时间：" text = {detail.signtime}/>
+                        <LabelText label = "地址：" text = {this.getAddressStr(detail)}/>
+                        <LabelText label = "签约时间：" text = {detail.singtime}/>
                         {
-                            detail.balance.map((item,index)=>{
+                            accountInfo.map((item,index)=>{
                                 return (
-                                    <LabelText key = {index} label = {`${item.brand}余额：`} text = {item.money}/>
+                                    <div>
+                                        <span className="m-r-20">{`品牌${item.brand}余额：`}</span>
+                                        {item.balance}
+                                    </div>
                                 )
                             })
                         }

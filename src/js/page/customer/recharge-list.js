@@ -5,6 +5,9 @@ import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
+import {rechargeList} from "../ajax/customerAjax";
+import Pubsub from "../../util/pubsub";
+
 export default class List extends React.Component{
     // 构造
     constructor(props) {
@@ -17,8 +20,9 @@ export default class List extends React.Component{
                 totalNum:100,
             },
             listRequest:{
-                userid:"",
+                userid: localStorage.userid || "",
                 keyword:"",
+                companyName:localStorage.companyName || "",
             },
             sortState:1,
             checkedAll:false,
@@ -26,32 +30,16 @@ export default class List extends React.Component{
         this.sortFn = this.sortFn.bind(this);
         this.checkAll = this.checkAll.bind(this);
     }
+    componentDidMount(){
+        this.getList();
+    }
     getList(pageNo=1){
-        let _this = this;
-        let {pager,listRequest} = this.state;
-        $.ajax({
-            url:commonUrl+"/order/findOrderList.htm",
-            type:"get",
-            dataType:"json",
-            data:{d:JSON.stringify(listRequest),pageNo:pageNo,pageSize:10},
-            success(data){
-                if(data.status == "0000"){
-                    pager.currentPage = pageNo;
-                    pager.totalNum = data.resultMap.iTotalDisplayRecords;
-                    _this.setState({
-                        list : data.resultMap.rows || [],
-                        pager : pager
-                    })
-                }else{
-                    pager.currentPage = 1;
-                    pager.totalNum = 0;
-                    _this.setState({list:[],pager})
-                }
-            }
-        });
+        rechargeList(this.state.listRequest).then((data)=>{
+            this.setState({list:data.dataList || []});
+        })
     }
     recharge(){
-        hashHistory.push("recharge");
+
     }
     add(){
         hashHistory.push("addCustomer");

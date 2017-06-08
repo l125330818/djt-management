@@ -15,7 +15,7 @@ const Input = React.createClass({
                 <RUI.Textarea
                     value = {this.props.value}
                     className ="w-245"
-                    disabled = {this.props.disabled || false}
+                    disable = {this.props.disable || false}
                     placeholder = {this.props.placeholder || ""}
                     onChange = {(e)=>{this.props.onChange && this.props.onChange(e)}}></RUI.Textarea>
             </div>

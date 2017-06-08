@@ -43,7 +43,7 @@ export default class Limit extends React.Component{
         return(
             <RUI.Input className={this.props.className}
                        maxLength={this.props.maxLength?this.props.maxLength:""}
-                       disabled={this.props.disabled}
+                       disable={this.props.disable}
                        placeholder={this.props.placeholder}
                        type="text"
                        value={this.props.value}

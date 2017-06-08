@@ -39,6 +39,7 @@ const Login = React.createClass({
                     localStorage.password = password;
                     localStorage.userid = data.data.userid || "";
                     localStorage.companyName = data.data.companyName || "";
+                    localStorage.agentname = data.data.agentname || "";
                 }else{
                     RUI.DialogManager.alert(data.msg);
                     GlobalData.userInfo = {};

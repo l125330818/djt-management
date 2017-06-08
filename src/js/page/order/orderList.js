@@ -177,7 +177,8 @@ export default class List extends React.Component{
                                     return(
                                         <tr key = {index}>
                                             <td>
-                                                <RUI.Checkbox onChange = {this.check.bind(this,item)} selected = {item.checked?1:0}> {item.order_no}</RUI.Checkbox>
+                                                <RUI.Checkbox onChange = {this.check.bind(this,item)}
+                                                              selected = {item.checked?1:0}> {item.order_no}</RUI.Checkbox>
                                             </td>
                                             <td>{item.clientname}</td>
                                             <td>{item.order_money}</td>

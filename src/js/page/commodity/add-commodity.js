@@ -140,10 +140,10 @@ export default class Add extends React.Component{
             data:request,
             success(data){
                 if(data.status == "0000"){
-                    Pubsub.publish("showMsg",["success","新增成功"]);
                     setTimeout(()=>{
                         hashHistory.push("commodityList");
-                    },1000)
+                    },1000);
+                    Pubsub.publish("showMsg",["success","新增成功"]);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -177,9 +177,22 @@ export default class Add extends React.Component{
                 <div className="add-content">
                     <div className="clearfix">
                         <label className="left-label left"> <span className="require">*</span> 商品图片：</label>
-                        <AntUpload fileList = {file}
-                                   callback = {this.uploadCallback}
-                                   length = {6} />
+                        {
+                            type == "check"?
+                                file.map((item,index)=>{
+                                    return(
+                                        <div className="check-img-wrap" key = {index}>
+                                            <img src={item.url} alt=""/>
+                                        </div>
+                                        )
+                                })
+                                :
+                                <AntUpload fileList = {file}
+                                           callback = {this.uploadCallback}
+                                           length = {6} />
+                        }
+
+
                     </div>
                     <LabelInput onChange = {this.changeInput.bind(this,"goodsname")}
                                 value = {request.goodsname}
@@ -188,14 +201,17 @@ export default class Add extends React.Component{
                                 label = "商品名称："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc1")}
                                value = {request.desc1}
+                               disable = {type == "check"}
                                require = {true}
                                label = "商品描述1："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc2")}
                                value = {request.desc2}
+                               disable = {type == "check"}
                                require = {true}
                                label = "商品描述2："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc3")}
                                value = {request.desc3}
+                               disable = {type == "check"}
                                require = {true}
                                label = "商品描述3："/>
                     <LabelSelect require = {true}
@@ -225,10 +241,12 @@ export default class Add extends React.Component{
                                 label = "单位："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"warn")}
                                 value = {request.warn}
+                                disable = {type == "check"}
                                 require = {true}
                                 label = "库存预警设置："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"remark")}
                                 require = {true}
+                                disable = {type == "check"}
                                 value = {request.remark}
                                 label = "备注："/>
                     <div className = "m-t-10">
@@ -264,17 +282,20 @@ export default class Add extends React.Component{
                                         <td>
                                             <LimitInput reg = {moneyReg}
                                                         value = {request.price}
+                                                        disable = {type == "check"}
                                                         onChange = {this.limitChange.bind(this,"price")}
                                                         className = "w-80"/>
                                         </td>
                                         <td>
                                             <RUI.Input  onChange = {this.changeInput.bind(this,"standard")}
                                                         value = {request.standard}
+                                                        disable = {type == "check"}
                                                         className = "w-80"/>
                                         </td>
                                         <td>
                                             <RUI.Input  onChange = {this.changeInput.bind(this,"size")}
                                                         value = {request.size}
+                                                        disable = {type == "check"}
                                                         className = "w-80"/>
                                         </td>
                                         <td>
@@ -336,8 +357,12 @@ export default class Add extends React.Component{
                 <div className="footer js-footer">
                     <div className="left">
                         <RUI.Button href="javascript:window.history.go(-1)">返回</RUI.Button>
-                        <RUI.Button className="primary" style={{marginLeft:"10px"}}
-                                    onClick={this.saveData}>保存</RUI.Button>
+                        {
+                            type != "check" &&
+                            <RUI.Button className="primary" style={{marginLeft:"10px"}}
+                                        onClick={this.saveData}>保存</RUI.Button>
+                        }
+
                     </div>
                 </div>
             </Layout>
