@@ -3,8 +3,7 @@
  */
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
-import Pager from "../../component/pager";
-import Badge  from 'antd/lib/badge';
+
 import LimitInput from "../../component/limitInput";
 import {hashHistory} from "react-router";
 let numReg = /^\d+$/;

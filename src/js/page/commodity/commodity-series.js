@@ -76,6 +76,18 @@ export default class Attr extends React.Component{
     dialogSubmit(){
         let _this = this;
         let {dialogInput,imgloc} = this.state;
+        let msg = "";
+        if(!dialogInput){
+            msg = "请输入系列";
+        }else  if(!imgloc){
+            msg = "请上传图片";
+        }else{
+            msg = "";
+        }
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+            return false;
+        }
         let request = {
             companyName:localStorage.companyName || "",
             brand:this.brand,

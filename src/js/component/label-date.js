@@ -2,6 +2,7 @@
  * Created by Administrator on 2017-2-19.
  */
 import DatePicker  from 'antd/lib/date-picker';
+import 'antd/lib/date-picker/style/css';
 import moment from 'moment';
 const Input = React.createClass({
     getDefaultProps(){

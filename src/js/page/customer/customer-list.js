@@ -16,11 +16,11 @@ export default class List extends React.Component{
             pager:{
                 currentPage:1,
                 pageSize:10,
-                totalNum:100,
+                totalNum:0,
             },
             listRequest:{
                 userid: localStorage.userid || "",
-                keyword:"",
+                query:"",
                 companyName:localStorage.companyName || "",
                 pageNum:1,
                 selectType:1,
@@ -39,6 +39,8 @@ export default class List extends React.Component{
         this.select = this.select.bind(this);
         this.goPage = this.goPage.bind(this);
         this.batchExport = this.batchExport.bind(this);
+        this.goPage = this.goPage.bind(this);
+        this.level = localStorage.level;
     }
     componentDidMount(){
         this.getList();
@@ -47,8 +49,17 @@ export default class List extends React.Component{
         let _this = this;
         let {pager,listRequest} = this.state;
         customerList(this.state.listRequest).then((data)=>{
+            pager.totalNum = data.count;
+            pager.currentPage = pageNo;
             this.setState({list:data.dataList || []});
         })
+    }
+    goPage(page){
+        let {listRequest} = this.state;
+        listRequest.pageNum = page;
+        this.setState({},()=>{
+            this.getList(page);
+        });
     }
     recharge(clientId){
         hashHistory.push(`recharge?clientId=${clientId}`);
@@ -71,22 +82,22 @@ export default class List extends React.Component{
     }
     inputChange(e){
         let {listRequest} = this.state;
-        listRequest.keyword = e.target.value;
+        listRequest.query = e.target.value;
     }
-    check(item,e){
+    check(item,index,e){
         let {list,checkedAll} = this.state;
         let temp = 0;
         if(e.data.selected ==1){
-            item.checked = true;
+            list[index].checked = true;
         }else{
-            item.checked = false;
+            list[index].checked = false;
         }
         list.map((list)=>{
             if(list.checked){
                 temp +=1;
             }
         });
-        checkedAll = temp == list.length
+        checkedAll = temp == list.length?true:false
         this.setState({list:list,checkedAll});
     }
     checkAll(e){
@@ -140,6 +151,7 @@ export default class List extends React.Component{
     }
     render(){
         let {pager,customerSort,list,checkedAll,listRequest,defaultSelect} =this.state;
+        let level = this.level;
         return(
             <div>
                 <Layout mark = "kh" bread = {["客户管理","客户列表"]}>
@@ -153,12 +165,15 @@ export default class List extends React.Component{
                                      callback = {this.select}
                                      value = {defaultSelect}/>
                         <RUI.Button className = "primary" onClick = {this.search} >查询</RUI.Button>
-                        <div className="right">
-                            <RUI.Button onClick = {this.batchExport}>批量导出</RUI.Button>
-                            <RUI.Button onClick = {this.set}>余额设置</RUI.Button>
-                            <RUI.Button onClick = {this.add} className = "primary">新增客户</RUI.Button>
+                        {
+                            level != 4 &&
+                            <div className="right">
+                                <RUI.Button onClick = {this.batchExport}>批量导出</RUI.Button>
+                                <RUI.Button onClick = {this.set}>余额设置</RUI.Button>
+                                <RUI.Button onClick = {this.add} className = "primary">新增客户</RUI.Button>
+                            </div>
+                        }
 
-                        </div>
                     </div>
                     <div className="order-content">
                         <table className="table">
@@ -192,7 +207,7 @@ export default class List extends React.Component{
                                     return(
                                         <tr key = {index}>
                                             <td className="text-left p-l-15">
-                                                <RUI.Checkbox onChange = {this.check.bind(this,item)}
+                                                <RUI.Checkbox onChange = {this.check.bind(this,item,index)}
                                                               selected = {item.checked?1:0}> {item.clientName}</RUI.Checkbox>
                                             </td>
                                             <td>{item.name}</td>
@@ -202,10 +217,19 @@ export default class List extends React.Component{
                                             <td>{item.money}</td>
                                             <td>{item.money}</td>
                                             <td>
-                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.clientId)}>查看&nbsp;|</a>
-                                                <a href="javascript:;" onClick = {this.modify.bind(this,item.clientId)}>&nbsp;修改&nbsp; |</a>
-                                                <a href="javascript:;" onClick = {this.recharge.bind(this,item.clientId)}>&nbsp;充值&nbsp; |</a>
-                                                <a href="javascript:;">&nbsp;禁用</a>
+                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.clientId)}>查看&nbsp;</a>
+                                                {
+                                                    level != 4 &&
+                                                    <a href="javascript:;" onClick = {this.modify.bind(this,item.clientId)}>| &nbsp;修改&nbsp; </a>
+                                                }
+                                                {
+                                                    (level != 2 && level !=3 && level != 4) &&
+                                                    <a href="javascript:;" onClick = {this.recharge.bind(this,item.clientId)}>| &nbsp;充值&nbsp; </a>
+                                                }
+                                                {
+                                                    level != 4 &&
+                                                    <a href="javascript:;">| &nbsp;禁用</a>
+                                                }
                                             </td>
                                         </tr>
                                     )

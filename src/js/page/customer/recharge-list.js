@@ -20,23 +20,38 @@ export default class List extends React.Component{
                 totalNum:100,
             },
             listRequest:{
-                userid: localStorage.userid || "",
                 keyword:"",
+                query:"",
+                pageSize:10,
+                pageNum:1,
                 companyName:localStorage.companyName || "",
             },
             sortState:1,
             checkedAll:false,
+            list:[]
         };
         this.sortFn = this.sortFn.bind(this);
         this.checkAll = this.checkAll.bind(this);
+        this.search = this.search.bind(this);
+        this.inputChange = this.inputChange.bind(this);
     }
     componentDidMount(){
         this.getList();
     }
     getList(pageNo=1){
+        let {pager} = this.state;
         rechargeList(this.state.listRequest).then((data)=>{
+            pager.totalNum = data.count;
+            pager.currentPage = pageNo;
             this.setState({list:data.dataList || []});
         })
+    }
+    goPage(page){
+        let {listRequest} = this.state;
+        listRequest.pageNum = page;
+        this.setState({},()=>{
+            this.getList(page);
+        });
     }
     recharge(){
 
@@ -78,14 +93,25 @@ export default class List extends React.Component{
         }
         this.setState({list,checkedAll});
     }
+    search(){
+        let {listRequest} = this.state;
+        listRequest.pageNum = 1;
+        this.setState({},()=>{
+            this.getList();
+        });
+    }
+    inputChange(e){
+        let {listRequest} = this.state;
+        listRequest.query = e.target.value;
+    }
     render(){
-        let {pager,sortState} =this.state;
+        let {pager,sortState,list} =this.state;
         return(
             <div>
                 <Layout mark = "cz" bread = {["充值记录","充值列表"]}>
                     <div className="search-div">
-                        <RUI.Input placeholder = "请输入名称或用户名"/>
-                        <RUI.Button className = "primary" >查询</RUI.Button>
+                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入公司名称或用户名或充值品牌"/>
+                        <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
                     </div>
                     <div className="order-content">
                         <table className="table">
@@ -101,17 +127,27 @@ export default class List extends React.Component{
                                     <i className="sort-top"/>
                                 </td>
                                 <td className="col-15">充值类型</td>
+                                <td className="col-15">经手人</td>
+                                <td className="col-15">备注</td>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td>四川公司</td>
-                                <td>张哥</td>
-                                <td>一叶子</td>
-                                <td>30000</td>
-                                <td>2017-04-19 22:57:39</td>
-                                <td>正向充值</td>
-                            </tr>
+                            {
+                                list.length>0 && list.map((item,i)=>{
+                                    return(
+                                        <tr key = {i}>
+                                            <td>{item.clientname}</td>
+                                            <td>{item.name}</td>
+                                            <td>{item.brand}</td>
+                                            <td>{item.money}</td>
+                                            <td>{item.chargetime}</td>
+                                            <td>{item.chargetype==1?"正向充值":"逆向充值"}</td>
+                                            <td className="col-15">经手人</td>
+                                            <td className="col-15">{item.remark}</td>
+                                        </tr>
+                                    )
+                                })
+                            }
                             </tbody>
                         </table>
                         <Pager onPage ={this.getList} {...pager}/>

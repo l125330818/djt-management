@@ -17,8 +17,8 @@ export default class List extends React.Component{
         // 初始状态
         this.state = {
             pager:{
-                currentPage:10,
-                pageSize:1,
+                currentPage:1,
+                pageSize:10,
                 totalNum:0,
             },
             listRequest:{
@@ -99,13 +99,13 @@ export default class List extends React.Component{
         }
         this.setState({list,checkedAll});
     }
-    check(item,e){
+    check(item,index,e){
         let {list,checkedAll} = this.state;
         let temp = 0;
         if(e.data.selected ==1){
-            item.checked = true;
+            list[index].checked = true;
         }else{
-            item.checked = false;
+            list[index].checked = false;
         }
         list.map((list)=>{
             if(list.checked){
@@ -131,9 +131,7 @@ export default class List extends React.Component{
         this.deleteAjax(arr);
     }
     delete(item){
-        let arr = [];
-        arr.push(item.activityid);
-        this.deleteAjax(arr);
+        this.deleteAjax(item.activityid);
     }
     deleteAjax(id){
         let _this = this;
@@ -145,7 +143,7 @@ export default class List extends React.Component{
                     url:commonUrl + "/djt/web/activity/deleteactivity.do",
                     type:"post",
                     dataType:"json",
-                    data:{activityid:JSON.stringify(id)},
+                    data:{activityid:id},
                     success(data){
                         if(data.status == "0000"){
                             Pubsub.publish("showMsg",["success","删除成功"]);
@@ -162,6 +160,45 @@ export default class List extends React.Component{
             }
         });
     }
+    batchGround(type){
+        let {list} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.activityid);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择活动");
+            return;
+        }
+        this.groundAjax(arr,type);
+    }
+    ground(item){
+        let arr = [];
+        arr.push(item.activityid);
+        let status = item.status==0?1:0;
+        this.groundAjax(arr,status);
+    }
+    groundAjax(id,status){
+        console.log(status)
+        let _this = this;
+        $.ajax({
+            url:commonUrl + "/djt/web/activity/batchup.do",
+            type:"post",
+            dataType:"json",
+            data:{activityid:JSON.stringify(id),status:status},
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success",status==0?"下线成功":"上线成功"]);
+                    _this.setState({checkedAll:false});
+                    _this.getList();
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        })
+    }
     render(){
         let {pager,sortState,list,checkedAll} =this.state;
         return(
@@ -171,8 +208,8 @@ export default class List extends React.Component{
                         <RUI.Input onChange = {this.inputChange.bind(this,"query")} placeholder = "请输入主题内容"/>
                         <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
                         <div className="right">
-                            <RUI.Button onClick = {this.add} >批量下架</RUI.Button>
-                            <RUI.Button onClick = {this.batchDelete} >批量删除</RUI.Button>
+                            <RUI.Button onClick = {this.batchGround.bind(this,1)}>批量上线</RUI.Button>
+                            <RUI.Button onClick = {this.batchGround.bind(this,0)}>批量下线</RUI.Button>
                             <RUI.Button onClick = {this.add} className = "primary">新增通知</RUI.Button>
                         </div>
                     </div>
@@ -202,7 +239,7 @@ export default class List extends React.Component{
                                     return(
                                         <tr key = {i}>
                                             <td>
-                                                <RUI.Checkbox onChange = {this.check.bind(this,item)}
+                                                <RUI.Checkbox onChange = {this.check.bind(this,item,i)}
                                                               selected = {item.checked?1:0}> {item.type}</RUI.Checkbox>
                                             </td>
                                             <td>{item.theme}</td>
@@ -213,7 +250,7 @@ export default class List extends React.Component{
                                             <td>{item.ranged}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkDetail.bind(this,item)}>查看&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;{item.status==0?"下线":"上线"}&nbsp; |</a>
+                                                <a href="javascript:;" onClick = {this.ground.bind(this,item)}>&nbsp;{item.status==0?"下线":"上线"}&nbsp; |</a>
                                                 <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
                                             </td>
                                         </tr>

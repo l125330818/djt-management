@@ -64,7 +64,7 @@ export function payrecord(paramType){
 }
 export function rechargeList(paramType){
     return $.ajax({
-        url:commonUrl+"/djt/web/recharge/log.do",
+        url:commonUrl+"/djt/web/log/rechargelist.do",
         type:"post",
         dataType:"json",
         data:paramType,

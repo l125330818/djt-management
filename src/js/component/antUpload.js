@@ -4,6 +4,9 @@
 import Upload from "antd/lib/upload";
 import Icon from "antd/lib/Icon";
 import Modal from "antd/lib/Modal";
+import 'antd/lib/upload/style/css';
+import 'antd/lib/Icon/style/css';
+import 'antd/lib/Modal/style/css';
 import "../../css/components/upload.scss";
 export default class AntUpload extends React.Component{
     // 构造

@@ -11,6 +11,7 @@ import {customerDetail} from "../ajax/customerAjax";
 import "../../../css/page/order.scss";
 import Pubsub from "../../util/pubsub";
 import {hashHistory} from "react-router";
+const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,9}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
 export default class Recharg extends React.Component{
     // 构造
       constructor(props) {
@@ -68,6 +69,7 @@ export default class Recharg extends React.Component{
         let {request} = this.state;
         let checked = e.data.selected==1?true : false;
         request.chargetype = checked?-1:1;
+        request.money = e.target.value;
         this.setState({checked});
     }
     selectBrand(e){
@@ -127,7 +129,7 @@ export default class Recharg extends React.Component{
         request[type] = value;
     }
     render(){
-        let {checked,brandSelect,ChineseNum,defaultBrand,detail} = this.state;
+        let {checked,brandSelect,ChineseNum,defaultBrand,detail,request} = this.state;
         return(
             <Layout mark = "kh" bread = {["客户管理","充值"]}>
                 <LabelText label = "公司名称：" text = {detail.clientname}/>
@@ -148,6 +150,8 @@ export default class Recharg extends React.Component{
                 <LabelInput onChange = {this.changeInput.bind(this,"money")}
                             require = {true}
                             tips = {ChineseNum}
+                            reg = {moneyReg}
+                            value = {request.money}
                             label = {checked? "负充值金额：": "充值金额："}/>
                 <LabelInput onChange = {this.changeInput1.bind(this,"remark")}
                             require = {true}

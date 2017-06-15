@@ -2,28 +2,38 @@
  * Created by luojie on 2017/4/12 9:31.
  */
 import "../../css/page/layout.scss";
-import {Link} from "react-router"
+import {Link} from "react-router";
 export default class Nav extends React.Component{
     constructor(props){
         super(props);
-        this.state={}
+        this.state={
+            navList:[]
+        }
     };
-    static defaultProps = {
-        navList:[
-            {mark:"dd",name:"订单管理",path:"/orderList"},
-            {mark:"kh",name:"客户管理",path:"/customerList"},
-            {mark:"sp",name:"商品管理",path:"/commodityList"},
-            {mark:"tz",name:"通知管理",path:"/noticeList"},
-            {mark:"cz",name:"充值记录",path:"/rechargeList"},
-            {mark:"cx",name:"万能查询",path:"/allSearchList"},
-        ]
-    };
-    static propTypes = {
-        navList: React.PropTypes.array,
+    componentDidMount(){
+        let level = localStorage.level;
+        let navList = [];
+        if(level == 4){
+            navList = [
+                {mark:"dd",name:"订单管理",path:"/orderList"},
+                {mark:"kh",name:"客户管理",path:"/customerList"},
+                {mark:"sp",name:"商品管理",path:"/commodityList"},
+                {mark:"cx",name:"万能查询",path:"/allSearchList"},
+            ];
+        }else{
+            navList = [
+                {mark:"dd",name:"订单管理",path:"/orderList"},
+                {mark:"kh",name:"客户管理",path:"/customerList"},
+                {mark:"sp",name:"商品管理",path:"/commodityList"},
+                {mark:"tz",name:"通知管理",path:"/noticeList"},
+                {mark:"cz",name:"充值记录",path:"/rechargeList"},
+                {mark:"cx",name:"万能查询",path:"/allSearchList"},
+            ];
+        }
+        this.setState({navList});
     }
     render(){
-        let {navList} = this.props;
-
+        let {navList} = this.state;
         return(
             <div className="nav-bar">
                 <ul>

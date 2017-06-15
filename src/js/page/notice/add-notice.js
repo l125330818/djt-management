@@ -3,11 +3,9 @@
  */
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
-import Upload from "../../component/upload";
 import LabelInput from "../../component/label-input";
 import LabelArea from "../../component/label-textarea";
 import LabelSelect from "../../component/label-select";
-import LimitInput from "../../component/limitInput";
 import LabelDate from "../../component/label-date";
 import moment from 'moment';
 import AntUpload from "../../component/antUpload";
@@ -29,19 +27,21 @@ export default class Add extends React.Component{
                 downtime:moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
                 companyName:localStorage.companyName || "",
                 type:"政策活动",
-                location:"滚动栏1",
+                location:"轮播图",
                 theme:"",
                 content:"",
                 imgloc:"",
-                relationid:"b6b1d249-efff-4e8b-acd6-769ac203b6b7",
+                relationid:"",
+                goodsName:"",
                 ranged:"一级代理商",
             },
             defaultType:{key:"政策活动",value:1},
-            defaultLocation:{key:"滚动栏1",value:1},
+            defaultLocation:{key:"轮播图",value:1},
             defaultranged:{key:"一级代理商",value:1},
             noticeType : 1,
             file:[],
-            goodsData:[]
+            goodsData:[],
+            goodsSelect:{key:'无',value:'0'}
         };
         this.uploadCallback = this.uploadCallback.bind(this);
         this.selectType = this.selectType.bind(this);
@@ -49,6 +49,7 @@ export default class Add extends React.Component{
         this.selectranged = this.selectranged.bind(this);
         this.saveData = this.saveData.bind(this);
         this.filterHandle = this.filterHandle.bind(this);
+        this.selectGoods = this.selectGoods.bind(this);
         this.activityId = this.props.location.query.activityId;
         this.type = this.props.location.query.type;
         this.listRequest = {
@@ -122,7 +123,23 @@ export default class Add extends React.Component{
         this.setState({defaultranged:e});
     }
     saveData(){
-        let {request} = this.state;
+        let {request,noticeType} = this.state;
+        let msg = "";
+        if(!request.theme){
+            msg = "请输入通知主题";
+        }else if(!request.content){
+            msg = "请输入主题内容";
+        }else if(noticeType==1 && !request.imgloc){
+            msg = "请上传图片";
+        }else if (noticeType==2 && !request.relationid){
+            msg = "请选择关联商品";
+        }else{
+            msg = "";
+        }
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+            return;
+        }
         $.ajax({
             url:commonUrl+"/djt/web/activity/addaction.do",
             type:"post",
@@ -152,8 +169,14 @@ export default class Add extends React.Component{
         })
 
     }
+    selectGoods(e){
+        let {request} = this.state;
+        request.relationid = e.value;
+        request.goodsName = e.key;
+        this.setState({goodsSelect:e});
+    }
     render(){
-        let {imgUrl,request,noticeType,file,defaultType,defaultLocation,defaultranged,goodsData} = this.state;
+        let {imgUrl,request,noticeType,file,defaultType,defaultLocation,defaultranged,goodsData,goodsSelect} = this.state;
         let type = this.type;
         return(
             <Layout mark = "tz" bread = {["通知管理","新增通知"]}>
@@ -167,24 +190,25 @@ export default class Add extends React.Component{
                     </LabelSelect>
                     <LabelSelect require = {true}
                                  label = "展示位置："
-                                 data = {[{key:"滚动栏1",value:1},{key:"滚动栏2",value:2},{key:"滚动栏3",value:3}]}
+                                 data = {[{key:"轮播图",value:1},{key:"横幅图",value:2}]}
                                  callback = {this.selectLocation}
                                  disable = {!!type}
                                  default = {defaultLocation}>
                     </LabelSelect>
+                    <LabelInput onChange = {this.changeInput.bind(this,"theme")}
+                                value =  {request.theme}
+                                disable = {!!type}
+                                require = {true}
+                                label = "通知主题："/>
+                    <LabelArea onChange = {this.changeInput.bind(this,"content")}
+                               value =  {request.content}
+                               disable = {!!type}
+                               require = {true}
+                               label = "通知内容："/>
                     {
                         noticeType==1?
                             <div>
-                                <LabelInput onChange = {this.changeInput.bind(this,"theme")}
-                                            value =  {request.theme}
-                                            disable = {!!type}
-                                            require = {true}
-                                            label = "通知主题："/>
-                                <LabelArea onChange = {this.changeInput.bind(this,"content")}
-                                           value =  {request.content}
-                                           disable = {!!type}
-                                           require = {true}
-                                           label = "通知内容："/>
+
                                 <div className="clearfix">
                                     <label className="left-label left"> <span className="require">*</span>上传图片：</label>
                                     {
@@ -206,18 +230,19 @@ export default class Add extends React.Component{
                             :
                             <div>
 
-                                <LabelInput  disable = {!!type} onChange = {this.changeInput.bind(this,"name")} require = {true}  label = "关联商品："/>
+                                <label className="left-label "><span className="require">*</span>关联商品：</label>
+                                <RUI.Select
+                                    data={goodsData}
+                                    value={goodsSelect}
+                                    filter={true}
+                                    className="rui-theme-1"
+                                    callback = {this.selectGoods}
+                                    stuff={true}
+                                    filterCallback={this.filterHandle}>
+                                </RUI.Select>
                             </div>
                     }
-                    <label className="left-label "><span className="require">*</span>关联商品：</label>
-                    <RUI.Select
-                        data={goodsData}
-                        value={{key:'无',value:'1'}}
-                        filter={true}
-                        className="rui-theme-1"
-                        stuff={true}
-                        filterCallback={this.filterHandle}>
-                    </RUI.Select>
+
                     <LabelSelect require = {true}
                                  label = "推广范围："
                                  disable = {!!type}

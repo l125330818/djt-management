@@ -5,7 +5,6 @@ import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
 import {brandList} from "../ajax/commodityAjax";
-import Upload from "../../component/upload";
 import AntUpload from "../../component/antUpload";
 import {hashHistory} from "react-router";
 import Pubsub from "../../util/pubsub";
@@ -79,11 +78,31 @@ export default class Attr extends React.Component{
             companyName:localStorage.companyName || "",
             imgloc
         };
+        let msg = "";
         if(addType==1){
+            if(!dialogInput){
+                msg = "请输入品牌";
+            }else  if(!imgloc){
+                msg = "请上传图片";
+            }else{
+                msg = "";
+            }
             request.brand = dialogInput;
         }else if(addType==2){
+            if(!dialogInput){
+                msg = "请输入系列";
+            }else  if(!imgloc){
+                msg = "请上传图片";
+            }else{
+                msg = "";
+            }
             request.series = dialogInput;
             request.brand = brand;
+        }
+
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+            return false;
         }
         let url = addType==1?"/djt/web/goodsmang/addbrand.do":"/djt/web/goodsmang/addseriser.do";
         $.ajax({

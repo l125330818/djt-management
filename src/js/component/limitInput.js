@@ -1,6 +1,4 @@
 
-import RUI from "react-component-lib";
-
 export default class Limit extends React.Component{
     constructor(props){
         super(props);

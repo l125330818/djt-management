@@ -7,6 +7,7 @@ import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
 import {commodityList} from "../ajax/commodityAjax";
 import DatePicker  from 'antd/lib/date-picker';
+import 'antd/lib/date-picker/style/css';
 import Pubsub from "../../util/pubsub";
 
 const { RangePicker } = DatePicker;
@@ -117,13 +118,13 @@ export default class List extends React.Component{
         }
         this.setState({list,checkedAll});
     }
-    check(item,e){
+    check(item,index,e){
         let {list,checkedAll} = this.state;
         let temp = 0;
         if(e.data.selected ==1){
-            item.checked = true;
+            list[index].checked = true;
         }else{
-            item.checked = false;
+            list[index].checked = false;
         }
         list.map((list)=>{
             if(list.checked){
@@ -281,8 +282,8 @@ export default class List extends React.Component{
                                 list.length>0 && list.map((item,index)=>{
                                     return(
                                         <tr key = {index}>
-                                            <td>
-                                                <RUI.Checkbox onChange = {this.check.bind(this,item)}
+                                            <td className="text-left p-l-15">
+                                                <RUI.Checkbox onChange = {this.check.bind(this,item,index)}
                                                               selected = {item.checked?1:0}> {item.goodsName}</RUI.Checkbox>
                                             </td>
                                             <td>{item.brand}</td>
@@ -295,10 +296,16 @@ export default class List extends React.Component{
                                             <td>{item.updateTime}</td>
                                             <td>{item.status==0?"上架":"下架"}</td>
                                             <td>
-                                                <a href="javascript:;" onClick = {this.checkDetail.bind(this,item)}>查看&nbsp;|</a>
-                                                <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;修改&nbsp; |</a>
-                                                <a href="javascript:;" onClick = {this.ground.bind(this,item)}>&nbsp;{item.status==0?"下架":"上架"}&nbsp;|</a>
-                                                <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
+                                                <div>
+                                                    <a href="javascript:;" onClick = {this.checkDetail.bind(this,item)}>查看&nbsp;|</a>
+                                                    <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;修改&nbsp; |</a>
+                                                    <a href="javascript:;" onClick = {this.ground.bind(this,item)}>&nbsp;{item.status==0?"下架":"上架"}&nbsp;|</a>
+                                                    <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
+                                                </div>
+                                                <div>
+                                                    <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;增加库存&nbsp; |</a>
+                                                    <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;减少库存&nbsp; |</a>
+                                                </div>
                                             </td>
                                         </tr>
                                     )

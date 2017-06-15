@@ -4,9 +4,9 @@
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
-import Badge  from 'antd/lib/badge';
 import {hashHistory} from "react-router";
 import DatePicker  from 'antd/lib/date-picker';
+import 'antd/lib/date-picker/style/css';
 const { RangePicker } = DatePicker;
 import moment from 'moment';
 export default class List extends React.Component{

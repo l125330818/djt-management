@@ -3,7 +3,6 @@
  */
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
-import Upload from "../../component/upload";
 import LabelInput from "../../component/label-input";
 import LabelArea from "../../component/label-textarea";
 import LabelSelect from "../../component/label-select";
@@ -30,7 +29,7 @@ export default class Add extends React.Component{
             specArr:[{price:"",num:"",spec:"",volume:"",productCode:"",barCode:"",}],
             request:{
                 goodsname : "",
-                desc1 : "haha",
+                desc1 : "",
                 desc2 : "",
                 desc3 : "",
                 brand : "",
@@ -109,10 +108,13 @@ export default class Add extends React.Component{
 
         }else{
             let seriesSelect = [];
-            let seriesDefault = {key:"请选择",value:""}
-            this.setState({seriesSelect,seriesDefault});
+            this.setState({seriesSelect});
 
         }
+        let seriesDefault = {key:"请选择",value:""};
+        request.series = "";
+        this.setState({seriesDefault});
+
     }
     groupChange(e){
         let specType  = e.data;
@@ -129,6 +131,9 @@ export default class Add extends React.Component{
         this.setState({specArr});
     }
     saveData(){
+        if(!this.checkValid()){
+            return;
+        }
         let {request} = this.state;
         request.goodsId = this.goodsId;
         let url = this.type?"/djt/web/goodsmang/updategoods.do":"/djt/web/goodsmang/addgoods.do";
@@ -143,12 +148,73 @@ export default class Add extends React.Component{
                     setTimeout(()=>{
                         hashHistory.push("commodityList");
                     },1000);
-                    Pubsub.publish("showMsg",["success","新增成功"]);
+                    Pubsub.publish("showMsg",["success",_this.type?"修改成功":"新增成功"]);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
             }
         });
+    }
+    checkValid(){
+        let {request} = this.state;
+        let msg = "";
+        let flag = true;
+        if(!request.imgloc){
+            msg = "请上传商品图片";
+            flag = false;
+        }else if(!request.goodsname){
+            msg = "请输入商品名称";
+            flag = false;
+        }else if(!request.desc1){
+            msg = "请输入商品描述1";
+            flag = false;
+        }else if(!request.desc2){
+            msg = "请输入商品描述2";
+            flag = false;
+        }else if(!request.desc3){
+            msg = "请输入商品描述3";
+            flag = false;
+        }else if(!request.brand){
+            msg = "请选择品牌";
+            flag = false;
+        }else if(!request.series){
+            msg = "请选择系列";
+            flag = false;
+        }else if(!request.classify){
+            msg = "请输入分类";
+            flag = false;
+        }else if(!request.unit){
+            msg = "请输入单位";
+            flag = false;
+        }else if(!request.warn){
+            msg = "请输入库存预警";
+            flag = false;
+        }else if(!request.remark){
+            msg = "请输入备注";
+            flag = false;
+        }else if(!request.price){
+            msg = "请输入价格";
+            flag = false;
+        }else if(!request.standard){
+            msg = "请输入规格";
+            flag = false;
+        }else if(!request.size){
+            msg = "请输入容量";
+            flag = false;
+        }else if(!request.goodsnum){
+            msg = "请输入产品编码";
+            flag = false;
+        }else if(!request.barcode){
+            msg = "请输入条形码";
+            flag = false;
+        }else{
+            msg = "";
+            flag = true;
+        }
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+        }
+        return flag;
     }
     limitChange(type,e){
         let {request} = this.state;
@@ -243,7 +309,7 @@ export default class Add extends React.Component{
                                 value = {request.warn}
                                 disable = {type == "check"}
                                 require = {true}
-                                label = "库存预警设置："/>
+                                label = "库存预警："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"remark")}
                                 require = {true}
                                 disable = {type == "check"}

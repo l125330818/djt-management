@@ -23,23 +23,24 @@ const Login = React.createClass({
         }
     },
     login(){
-        hashHistory.push("/orderList");
         let userName = this.refs.userName.getValue();
         let password = this.refs.pwd.getValue();
         $.ajax({
-            url:commonUrl+"/djt/web/user/login.do",
+            url:"https://www.djtserver.cn"+"/djt/web/user/login.do",
             type:"post",
             dataType:"json",
             data:{username:this.refs.userName.getValue(),password:this.refs.pwd.getValue()},
             success(data){
                 if(data.status == "0000"){
-                    hashHistory.push("/orderList");
                     GlobalData.userInfo = data.data;
                     localStorage.userName = userName;
                     localStorage.password = password;
                     localStorage.userid = data.data.userid || "";
                     localStorage.companyName = data.data.companyName || "";
                     localStorage.agentname = data.data.agentname || "";
+                    localStorage.level = data.data.level || "";
+                    hashHistory.push("/orderList");
+
                 }else{
                     RUI.DialogManager.alert(data.msg);
                     GlobalData.userInfo = {};

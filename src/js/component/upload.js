@@ -3,7 +3,6 @@
  */
 import "../../css/components/upload.scss";
 import "../library/ajaxupload.3.5";
-import  Modal  from 'antd/lib/Modal';
 
 import Pubsub from "../util/pubsub";
 export default class Upload extends React.Component{
