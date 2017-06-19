@@ -222,17 +222,17 @@ export default class Detail extends React.Component{
                         </tr>
                         </thead>
                         <tbody>
-                        {/*{*/}
-                            {/*detail.goods_list.map((item,index)=>{*/}
-                                {/*return(*/}
-                                    {/*<tr key = {index}>*/}
-                                        {/*<td>{item.goods_name}</td>*/}
-                                        {/*<td>{item.goods_money}</td>*/}
-                                        {/*<td>{item.goods_money}</td>*/}
-                                    {/*</tr>*/}
-                                {/*)*/}
-                            {/*})*/}
-                        {/*}*/}
+                        {
+                            detail.dataList && detail.dataList.map((item,index)=>{
+                                return(
+                                    <tr key = {index}>
+                                        <td>{item.goodsname}</td>
+                                        <td>{item.brand}</td>
+                                        <td>{item.price}</td>
+                                    </tr>
+                                )
+                            })
+                        }
 
                         </tbody>
                     </table>

@@ -7,6 +7,7 @@ import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
 import DatePicker  from 'antd/lib/date-picker';
 import 'antd/lib/date-picker/style/css';
+import {balanceList,goodsList} from "../ajax/searchAjax";
 const { RangePicker } = DatePicker;
 import moment from 'moment';
 export default class List extends React.Component{
@@ -18,40 +19,30 @@ export default class List extends React.Component{
             pager:{
                 currentPage:1,
                 pageSize:10,
-                totalNum:100,
+                totalNum:0,
             },
             listRequest:{
-                userid:"",
-                keyword:"",
-                sign:1,
-                amountSort:1,
-                selectType:1,
-                startTime : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
-                endTime : moment(new Date()).format("YYYY-MM-DD"),
+                companyName:localStorage.companyName || "",
+                brand:"",
+                series:"",
+                product:"",
+                stdate : moment(new Date()-86400*100*1000).format("YYYY-MM-DD"),
+                endate : moment(new Date()).format("YYYY-MM-DD"),
+                pageNum:1,
+                pageSize:10
             },
             selectValue:[
-                {key:"品牌查询",value:"1"},{key:"余额查询",value:2},
+                {key:"品牌跟踪",value:"1"},{key:"余额跟踪",value:2},
             ],
-            defaultSelect:{key:"品牌查询",value:""},
-            list:[{
-                "order_no": "111111",
-                "clientname": "成都俊美化妆品",
-                "order_money": 20.0,
-                "brand": "韩束" ,
-                "order_time": "2017-12-12 17:50",
-                "status": 1,
-                "flag": 0
-            },{
-                "order_no": "111111",
-                "clientname": "成都俊美化妆品",
-                "order_money": 20.0,
-                "brand": "韩束" ,
-                "order_time": "2017-12-12 17:50",
-                "status": 1,
-                "flag": 0
-            }],
+            defaultSelect:{key:"品牌跟踪",value:""},
+            list:[],
             ids:[],
             checkedAll:false,
+            selectType:1,
+            sumBalance:0,
+            sumUpmoney:0,
+            money:0,
+            left:0,
         };
         this.check = this.check.bind(this);
         this.checkAll = this.checkAll.bind(this);
@@ -61,9 +52,44 @@ export default class List extends React.Component{
         this.queryDetail = this.queryDetail.bind(this);
         this.addOrder = this.addOrder.bind(this);
         this.datePickerChange = this.datePickerChange.bind(this);
+        this.goPage = this.goPage.bind(this);
       }
-    getList(){
-        console.log(this.state.listRequest)
+    componentDidMount(){
+        this.getGoodsList();
+        // this.getBalanceList();
+    }
+    getGoodsList(pageNo=1){
+        let _this = this;
+        let {pager,listRequest} = this.state;
+        goodsList(this.state.listRequest).then((data)=>{
+            pager.totalNum = data.count;
+            pager.currentPage = pageNo;
+            this.setState({
+                list:data.dataList || [],
+                money:data.money || 0,
+                left:data.left || 0,
+            });
+        })
+    }
+    getBalanceList(pageNo=1){
+        let _this = this;
+        let {pager,listRequest} = this.state;
+        balanceList(this.state.listRequest).then((data)=>{
+            pager.totalNum = data.count;
+            pager.currentPage = pageNo;
+            this.setState({
+                list:data.dataList || [],
+                sumBalance:data.sumBalance || 0,
+                sumUpmoney:data.sumUpmoney || 0,
+            });
+        })
+    }
+    goPage(page){
+        let {listRequest} = this.state;
+        listRequest.pageNum = page;
+        this.setState({},()=>{
+            this.getList(page);
+        });
     }
     queryDetail(){
         hashHistory.push("orderDetail");
@@ -115,19 +141,32 @@ export default class List extends React.Component{
                 return "";
         }
     }
-    inputChange(e){
+    inputChange(type,e){
         let {listRequest} = this.state;
-        listRequest.keyword = e.target.value;
-    }
-    select(e){
-        let {listRequest,defaultSelect} = this.state;
-        defaultSelect = e;
-        listRequest.selectType = e.value;
+        listRequest[type] = e.target.value;
         this.setState({});
     }
+    select(e){
+        let {defaultSelect} = this.state;
+        defaultSelect = e;
+        this.setState({selectType:e.value},()=>{
+            if(e.value == 1){
+                this.getGoodsList();
+            }else{
+                this.getBalanceList();
+            }
+        });
+    }
     query(){
-        let {listRequest} = this.state;
-        console.log(listRequest)
+        let {listRequest,selectType} = this.state;
+        listRequest.pageNum = 1;
+        this.setState({},()=>{
+            if(selectType == 1){
+                this.getGoodsList();
+            }else{
+                this.getBalanceList();
+            }
+        });
     }
     addOrder(){
         hashHistory.push("addOrder");
@@ -137,22 +176,27 @@ export default class List extends React.Component{
     }
     datePickerChange(e,d){
         let data = e.data;
+        let {selectType} = this.state;
         let {listRequest} = this.state;
-        listRequest.startTime = d[0]
-        listRequest.endTime = d[1]
+        listRequest.stdate = d[0]
+        listRequest.endate = d[1]
         this.setState({listRequest},()=>{
-            this.getList();
+            if(selectType == 1){
+                this.getGoodsList();
+            }else{
+                this.getBalanceList();
+            }
         });
     }
     render(){
-        let {pager,list,checkedAll,selectValue,defaultSelect,listRequest} =this.state;
+        let {pager,list,checkedAll,selectValue,defaultSelect,listRequest,selectType,money,sumBalance,sumUpmoney} =this.state;
         return(
             <div>
                 <Layout mark = "cx" bread = {["万能查询","万能查询"]}>
                     <div className="search-div">
                         <label className="m-l-r-10 line-32 left">查询类型：</label>
                         <RUI.Select  data = {selectValue}
-                                     className = "w-90 rui-theme-1 line-32 left "
+                                     className = "w-90 rui-theme-1 left "
                                      callback = {this.select}
                                      value = {defaultSelect}/>
                         <label className="m-l-r-10 line-32 left">查询时间：</label>
@@ -160,27 +204,39 @@ export default class List extends React.Component{
                                      disabledDate={this.disabledDate}
                                      size = "large"
                                      allowClear ={false}
-                                     value={[moment(listRequest.startTime, 'YYYY-MM-DD'),moment(listRequest.endTime, 'YYYY-MM-DD')]}
-                                     defaultValue={[moment(listRequest.startTime, 'YYYY-MM-DD'),moment(listRequest.endTime, 'YYYY-MM-DD')]}/>
+                                     value={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}
+                                     defaultValue={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}/>
                         <RUI.Button onClick = {this.query} className = "primary" >查询</RUI.Button>
+                        {
+                            selectType==1?
+                                <label className="m-l-r-10 line-32">合计：<span className="require">{money}</span></label>
+                                :
+                                <label className="m-l-r-10 line-32">
+                                    合计上账金额：
+                                    <span className="require">{sumUpmoney}</span>
+                                    合计金额：
+                                    <span className="require">{sumBalance}</span>
+                                </label>
+
+                        }
                         <div className="right">
                             <RUI.Button onClick = {this.export}>导出</RUI.Button>
                         </div>
                     </div>
                     {
-                        listRequest.selectType == 1?
+                        selectType == 1?
                             <div className = "search-div p-t-0">
                                 <label className="m-l-r-10">品牌：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"company")} placeholder = "请输入品牌"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"brand")} placeholder = "请输入品牌"/>
                                 <label className="m-l-r-10">系列：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"company")} placeholder = "请输入系列"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"series")} placeholder = "请输入系列"/>
                                 <label className="m-l-r-10">商品：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"company")} placeholder = "请输入商品"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"product")} placeholder = "请输入商品"/>
                             </div>
                             :
                             <div className = "search-div p-t-0">
-                                <label className="m-l-r-10">金额：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"company")} placeholder = "请输入金额"/>
+                                <label className="m-l-r-10">品牌：</label>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"brand")} placeholder = "请输入品牌"/>
                             </div>
                     }
 
@@ -188,39 +244,63 @@ export default class List extends React.Component{
                     <div className="order-content">
                         <table className="table">
                             <thead>
-                                <tr>
-                                    <td className="col-15">
-                                        <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>订单号</RUI.Checkbox>
-                                    </td>
-                                    <td className="col-10">公司名称</td>
-                                    <td className="col-10">订单金额</td>
-                                    <td className="col-10">订单品牌</td>
-                                    <td className="col-10">下单时间</td>
-                                    <td className="col-10">状态</td>
-                                    <td className="col-10">备注</td>
-                                    <td className="col-10">经手人</td>
-                                    <td className="col-15">操作</td>
-                                </tr>
+                            {
+                                selectType == 1?
+                                    <tr>
+                                        <td className="col-15">
+                                            <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>商品名称</RUI.Checkbox>
+                                        </td>
+                                        <td className="col-10">品牌</td>
+                                        <td className="col-10">系列</td>
+                                        <td className="col-10">商品分类</td>
+                                        <td className="col-10">单位</td>
+                                        <td className="col-10">价格(元)</td>
+                                        <td className="col-10">数量</td>
+                                        <td className="col-10">对象</td>
+                                        <td className="col-15">时间</td>
+                                    </tr>
+                                    :
+                                    <tr>
+                                        <td className="col-15">
+                                            <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>品牌</RUI.Checkbox>
+                                        </td>
+                                        <td className="col-10">上账金额</td>
+                                        <td className="col-10">金额</td>
+                                        <td className="col-10">时间</td>
+                                    </tr>
+                            }
                             </thead>
                             <tbody>
                             {
                                 list.length>0 && list.map((item,index)=>{
                                     return(
-                                        <tr key = {index}>
+                                        selectType==1?
+                                            <tr key = {index}>
+                                                <td>
+                                                    <RUI.Checkbox
+                                                        onChange = {this.check.bind(this,item)}
+                                                        selected = {item.checked?1:0}> {item.goodsname}</RUI.Checkbox>
+                                                </td>
+                                                <td>{item.brand}</td>
+                                                <td>{item.series}</td>
+                                                <td>{item.classify}</td>
+                                                <td>{item.unit}</td>
+                                                <td>{item.price}</td>
+                                                <td>{`${item.count}`}</td>
+                                                <td>{item.clientName || "无"}</td>
+                                                <td>
+                                                    {item.ordertime}
+                                                </td>
+                                            </tr>
+                                            :<tr key = {index}>
                                             <td>
-                                                <RUI.Checkbox onChange = {this.check.bind(this,item)} selected = {item.checked?1:0}> {item.order_no}</RUI.Checkbox>
+                                                <RUI.Checkbox
+                                                    onChange = {this.check.bind(this,item)}
+                                                    selected = {item.checked?1:0}> {item.brand}</RUI.Checkbox>
                                             </td>
-                                            <td>{item.clientname}</td>
-                                            <td>{item.order_money}</td>
-                                            <td>{item.brand}</td>
-                                            <td>{item.order_time}</td>
-                                            <td>{this.getState(item.status)}</td>
-                                            <td>{this.getState(item.status)}</td>
-                                            <td>{this.getState(item.status)}</td>
-                                            <td>
-                                                <a href="javascript:;" onClick = {this.queryDetail}>查看&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;处理</a>
-                                            </td>
+                                            <td>{item.upmoney}</td>
+                                            <td>{item.money}</td>
+                                            <td>{item.date}</td>
                                         </tr>
                                     )
                                 })
@@ -228,7 +308,10 @@ export default class List extends React.Component{
 
                             </tbody>
                         </table>
-                        <Pager onPage ={this.getList} {...pager}/>
+                        {
+                            list.length==0 && <div className="no-data">暂时没有数据哦</div>
+                        }
+                        <Pager onPage ={this.goPage} {...pager}/>
                     </div>
                 </Layout>
             </div>

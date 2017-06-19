@@ -259,6 +259,9 @@ export default class List extends React.Component{
                             }
                             </tbody>
                         </table>
+                        {
+                            list.length==0 && <div className="no-data">暂时没有数据哦</div>
+                        }
                         <Pager onPage ={this.goPage} {...pager}/>
                     </div>
                 </Layout>

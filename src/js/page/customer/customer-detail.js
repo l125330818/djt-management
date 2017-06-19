@@ -4,7 +4,7 @@
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import LabelText from "../../component/label-text";
-import {reset,customerDetail} from "../ajax/customerAjax";
+import {reset,customerDetail,rechargeList} from "../ajax/customerAjax";
 import Pubsub from "../../util/pubsub";
 
 export default class Detail extends React.Component{
@@ -12,9 +12,18 @@ export default class Detail extends React.Component{
         super(props);
         this.state = {
             detail:{},
-            accountInfo:[]
+            accountInfo:[],
+            rechargeList:[],
+            listRequest:{
+                keyword:"",
+                query:"",
+                pageSize:100000,
+                pageNum:1,
+                companyName:localStorage.companyName || "",
+            },
         }
         this.reset = this.reset.bind(this);
+        this.rechargeList = this.rechargeList.bind(this);
     }
     componentDidMount(){
         this.getDetail();
@@ -53,8 +62,18 @@ export default class Detail extends React.Component{
     getAddressStr(detail){
         return detail.sheng + detail.shi + detail.qu + detail.addetail
     }
+    rechargeList(){
+        let {listRequest,detail} = this.state;
+        listRequest.query = detail.clientname;
+        rechargeList(listRequest).then((data)=>{
+            this.setState({
+                rechargeList:data.dataList || []
+            })
+        });
+        this.refs.dialog.show();
+    }
     render(){
-        let {detail,accountInfo} = this.state;
+        let {detail,accountInfo,rechargeList} = this.state;
         return(
             <Layout mark = "kh" bread = {["客户管理","客户详情"]}>
                 <div className="order-detail">
@@ -89,15 +108,46 @@ export default class Detail extends React.Component{
                         <RUI.Button href="javascript:window.history.go(-1)">返回</RUI.Button>
                         <RUI.Button className="primary"
                                     style={{marginLeft:"10px"}}
-                                    onClick={this.saveData}>充值记录</RUI.Button>
+                                    onClick={this.rechargeList}>充值记录</RUI.Button>
                         <RUI.Button className="primary"
                                     style={{marginLeft:"10px"}}
                                     onClick={this.reset}>重置密码</RUI.Button>
-                        <RUI.Button className="primary"
-                                    style={{marginLeft:"10px"}}
-                                    onClick={this.saveData}>修改</RUI.Button>
                     </div>
                 </div>
+                <RUI.Dialog ref="dialog" title={"充值记录"} draggable={false} buttons="submit,cancel"
+                            onSubmit={this.dialogSubmit}>
+                    <div style={{width:'400px', wordWrap:'break-word'}}>
+                        <h3 className="text-center">公司名称:{detail.clientname}</h3>
+                        <table className="recharge-table">
+                            <thead>
+                                <tr>
+                                    <td>充值时间</td>
+                                    <td>品牌</td>
+                                    <td>金额</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {
+                                rechargeList.length>0 && rechargeList.map((item,i)=>{
+                                    return(
+                                        <tr key = {i}>
+                                            <td>{item.chargetime}</td>
+                                            <td>{item.brand}</td>
+                                            <td>{item.money}</td>
+                                        </tr>
+                                    )
+                                })
+                            }
+
+                            </tbody>
+                        </table>
+                        {
+                            rechargeList.length == 0 &&
+                                <div className="recharge-no-data">暂时没有充值记录哦</div>
+                        }
+
+                    </div>
+                </RUI.Dialog>
             </Layout>
         )
     }

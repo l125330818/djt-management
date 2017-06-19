@@ -192,6 +192,9 @@ export default class Attr extends React.Component{
 
                             </tbody>
                         </table>
+                        {
+                            brandList.length==0 && <div className="no-data">暂时没有数据哦</div>
+                        }
                         <Pager onPage ={this.goPage} {...pager}/>
                         <RUI.Dialog ref="dialog" title={addType==1?"新增品牌":"新增系列"}
                                     draggable={false}

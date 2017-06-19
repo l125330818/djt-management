@@ -208,8 +208,11 @@ export default class List extends React.Component{
                             {
                                 list.length>0 && list.map((item,index)=>{
                                     return(
-                                        <tr key = {index}>
-                                            <td className="text-left p-l-15">
+                                        <tr key = {index} className="font-color-red">
+                                            <td className="text-left p-l-15 relative">
+                                                {
+                                                    item.unread==1 && <span className="circle"/>
+                                                }
                                                 <RUI.Checkbox onChange = {this.check.bind(this,item)}
                                                               selected = {item.checked?1:0}> {item.orderno}</RUI.Checkbox>
                                             </td>
@@ -217,19 +220,23 @@ export default class List extends React.Component{
                                             <td>{item.money}</td>
                                             <td>{item.ordertime}</td>
                                             <td>{this.getState(item.status)}</td>
-                                            <td>{item.remark}</td>
+                                            <td>{item.remark || "无"}</td>
                                             <td>{item.handler}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.queryDetail.bind(this,item.orderno)}>查看&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;处理</a>
+                                                <a href="javascript:;">&nbsp;新增</a>
                                             </td>
                                         </tr>
                                     )
                                 })
                             }
 
+
                             </tbody>
                         </table>
+                        {
+                            list.length==0 && <div className="no-data">暂时没有数据哦</div>
+                        }
                         <Pager onPage ={this.goPage} {...pager}/>
                     </div>
                 </Layout>
