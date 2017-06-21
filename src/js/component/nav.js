@@ -18,6 +18,7 @@ export default class Nav extends React.Component{
                 {mark:"dd",name:"订单管理",path:"/orderList"},
                 {mark:"kh",name:"客户管理",path:"/customerList"},
                 {mark:"sp",name:"商品管理",path:"/commodityList"},
+                {mark:"rk",name:"入库记录",path:"/storageList"},
                 {mark:"cx",name:"万能查询",path:"/allSearchList"},
             ];
         }else{
@@ -27,6 +28,7 @@ export default class Nav extends React.Component{
                 {mark:"sp",name:"商品管理",path:"/commodityList"},
                 {mark:"tz",name:"通知管理",path:"/noticeList"},
                 {mark:"cz",name:"充值记录",path:"/rechargeList"},
+                {mark:"rk",name:"入库记录",path:"/storageList"},
                 {mark:"cx",name:"万能查询",path:"/allSearchList"},
             ];
         }
@@ -36,6 +38,11 @@ export default class Nav extends React.Component{
         let {navList} = this.state;
         return(
             <div className="nav-bar">
+                <div className="user-wel">
+                    <p>{localStorage.agentname}</p>
+                    <p>欢迎你!</p>
+                </div>
+
                 <ul>
                     {
                         navList.map((item,index)=>{

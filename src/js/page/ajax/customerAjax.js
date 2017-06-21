@@ -77,3 +77,33 @@ export function rechargeList(paramType){
         }
     })
 }
+export function storageList(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/web/log/addleftlist.do",
+        type:"post",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        if(data.status == "0000"){
+            return data.data;
+        }else{
+            Pubsub.publish("showMsg",["wrong",data.msg]);
+            return data;
+        }
+    })
+}
+export function getMoneySetting(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/web/psController/getMoneySetting.do",
+        type:"post",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        if(data.status == "0000"){
+            return data.data;
+        }else{
+            Pubsub.publish("showMsg",["wrong",data.msg]);
+            return data;
+        }
+    })
+}

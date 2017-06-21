@@ -30,7 +30,7 @@ export default class Detail extends React.Component{
     }
     getDetail(){
         let clientId = this.props.location.query.clientId;
-        customerDetail({clientId}).then((data)=>{
+        customerDetail({clientId,companyName:localStorage.companyName}).then((data)=>{
             this.setState({
                 detail:data.ClientInfo,
                 accountInfo:data.AccountInfo,
@@ -55,9 +55,16 @@ export default class Detail extends React.Component{
     }
     reset(){
         let account = this.props.location.query.account || "";
-        reset({account}).then((data)=>{
-            Pubsub.publish("showMsg",["success","重置密码成功"])
+        RUI.DialogManager.confirm({
+            message:"您确定要重置密码吗？",
+            title:"重置密码",
+            submit(){
+                reset({account}).then((data)=>{
+                    Pubsub.publish("showMsg",["success","重置密码成功"])
+                });
+            }
         });
+
     }
     getAddressStr(detail){
         return detail.sheng + detail.shi + detail.qu + detail.addetail
@@ -83,10 +90,10 @@ export default class Detail extends React.Component{
                         <LabelText label = "客户姓名：" text = {detail.name}/>
                         <LabelText label = "代理级别：" text = {this.getState(detail.level)}/>
                         <LabelText label = "账号：" text = {detail.account}/>
-                        <LabelText label = "联系方式：" text = {detail.tel}/>
-                        <LabelText label = "Email：" text = {detail.email}/>
-                        <LabelText label = "QQ：" text = {detail.qq}/>
-                        <LabelText label = "微信：" text = {detail.weixin}/>
+                        <LabelText label = "联系方式：" text = {detail.tel || "无"}/>
+                        <LabelText label = "Email：" text = {detail.email || "无"}/>
+                        <LabelText label = "QQ：" text = {detail.qq || "无"}/>
+                        <LabelText label = "微信：" text = {detail.weixin || "无"}/>
                         <LabelText label = "地址：" text = {this.getAddressStr(detail)}/>
                         <LabelText label = "签约时间：" text = {detail.singtime}/>
                         {
@@ -100,7 +107,7 @@ export default class Detail extends React.Component{
                             })
                         }
 
-                        <LabelText label = "备注：" text = {detail.remark}/>
+                        <LabelText label = "备注：" text = {detail.remark || "无"}/>
                     </div>
                 </div>
                 <div className="footer js-footer">
@@ -116,7 +123,7 @@ export default class Detail extends React.Component{
                 </div>
                 <RUI.Dialog ref="dialog" title={"充值记录"} draggable={false} buttons="submit,cancel"
                             onSubmit={this.dialogSubmit}>
-                    <div style={{width:'400px', wordWrap:'break-word'}}>
+                    <div style={{width:'400px', wordWrap:'break-word',maxHeight:350,overflow:"auto"}}>
                         <h3 className="text-center">公司名称:{detail.clientname}</h3>
                         <table className="recharge-table">
                             <thead>

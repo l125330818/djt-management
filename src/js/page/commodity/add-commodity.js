@@ -12,7 +12,7 @@ import Pubsub from "../../util/pubsub";
 import {hashHistory} from "react-router";
 
 import {brandList,commodityDetail,seriesList} from "../ajax/commodityAjax";
-const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,6}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
+const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,9}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
 
 export default class Add extends React.Component{
     // 构造

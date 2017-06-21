@@ -43,7 +43,6 @@ const Login = React.createClass({
 
                 }else{
                     RUI.DialogManager.alert(data.msg);
-                    GlobalData.userInfo = {};
                 }
             }
         })

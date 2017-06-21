@@ -59,7 +59,9 @@ export default class Attr extends React.Component{
         });
     }
     addBrand(){
-        this.refs.dialog.show();
+        this.setState({file:[]},()=>{
+            this.refs.dialog.show();
+        })
     }
     uploadCallback(file){
         let imgloc = file.length?file[0].url : "";
@@ -69,7 +71,7 @@ export default class Attr extends React.Component{
         this.setState({dialogInput:e.target.value});
     }
     addSeries(){
-        this.setState({addType:2},()=>{
+        this.setState({addType:2,file:[]},()=>{
             this.refs.dialog.show();
         });
     }
@@ -101,8 +103,8 @@ export default class Attr extends React.Component{
             data:request,
             success(data){
                 if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success","新增成功"]);
                     _this.getList();
-                    Pubsub.publish("showMsg",["success","操作成功"]);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -118,7 +120,7 @@ export default class Attr extends React.Component{
                 let request = {
                     companyName:localStorage.companyName || "",
                     series : item.series,
-                    brand:this.brand
+                    brand:_this.brand
                 };
                 $.ajax({
                     url:commonUrl+"/djt/web/goodsmang/deleteseries.do",
@@ -127,8 +129,8 @@ export default class Attr extends React.Component{
                     data:request,
                     success(data){
                         if(data.status == "0000"){
-                            _this.getList();
                             Pubsub.publish("showMsg",["success","删除成功"]);
+                            _this.getList();
                         }else{
                             Pubsub.publish("showMsg",["wrong",data.msg]);
                         }
@@ -139,7 +141,8 @@ export default class Attr extends React.Component{
 
     }
     render(){
-        let {pager,brandList,addType} = this.state;
+        let {pager,brandList,addType,file} = this.state;
+        console.log(file);
         return(
             <div>
                 <Layout mark = "sp" bread = {["商品管理","商品属性"]}>
@@ -181,25 +184,19 @@ export default class Attr extends React.Component{
                             brandList.length==0 && <div className="no-data">暂时没有数据哦</div>
                         }
                         <Pager onPage ={this.goPage} {...pager}/>
-                        <RUI.Dialog ref="dialog" title={addType==1?"新增品牌":"新增系列"}
+                        <RUI.Dialog ref="dialog" title={"新增系列"}
                                     draggable={false}
                                     buttons="submit,cancel"
                                     onCancel={this.dialogCancel}
                                     onSubmit={this.dialogSubmit}>
                             <div style={{width:'400px', wordWrap:'break-word'}} >
-                                {
-                                    addType ==2 &&
-                                    <div>
-                                        <label className = "left">品牌：</label>
-                                        <span>{this.brand}</span>
-                                    </div>
-                                }
                                 <div className="clearfix">
                                     <label className = "left m-t-36">{addType==1?"品牌：":"系列："}</label>
                                     <RUI.Input onChange = {this.inputChange.bind(this)}
                                                className = "left add-dialog-input"
-                                               placeholder = {addType==1?"请输入品牌":"请输入系列"}/>
+                                               placeholder = {"请输入系列"}/>
                                     <AntUpload length = {1}
+                                               fileList = {file}
                                                callback = {this.uploadCallback}
                                                removePreview = {true}/>
                                 </div>

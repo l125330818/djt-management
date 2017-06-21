@@ -9,6 +9,8 @@ import {commodityList} from "../ajax/commodityAjax";
 import DatePicker  from 'antd/lib/date-picker';
 import 'antd/lib/date-picker/style/css';
 import Pubsub from "../../util/pubsub";
+import LabelInput from "../../component/label-input";
+let qqReg = /^\d+$/;
 
 const { RangePicker } = DatePicker;
 import moment from 'moment';
@@ -31,13 +33,18 @@ export default class List extends React.Component{
                 goodsName:"",
                 stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
                 endate : moment(new Date()).format("YYYY-MM-DD"),
-                keyword:"",
+                keyword:"goodsLeft",
                 pageNum:1,
+                seq:"desc",
                 pageSize:10,
 
             },
             checkedAll:false,
-            list:[]
+            list:[],
+            saleSort:2,
+            inNum:0,
+            goodsId:"",
+            storageType:1,
         };
         this.add = this.add.bind(this);
         this.manageAttr = this.manageAttr.bind(this);
@@ -47,6 +54,8 @@ export default class List extends React.Component{
         this.checkAll = this.checkAll.bind(this);
         this.batchDelete = this.batchDelete.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.addStorage = this.addStorage.bind(this);
+        this.addStorageSubmit = this.addStorageSubmit.bind(this);
     }
     componentDidMount(){
         this.getList();
@@ -219,8 +228,59 @@ export default class List extends React.Component{
         let status = item.status==0?1:0;
         this.groundAjax(arr,status);
     }
+    sortFn(type,sortType){
+        let {listRequest} = this.state;
+        listRequest.keyword = type;
+        this.state[sortType] = this.state[sortType]==1?2:1;
+        listRequest.seq = listRequest.seq == "desc"?"asc":"desc"
+        this.setState({},()=>{
+            this.getList();
+        });
+    }
+    addStorage(item,type){
+        let storageType =1;
+        if(type=="add"){
+            storageType = 1;
+        }else{
+            storageType = 2;
+        }
+        this.setState({goodsId:item.goodsId,storageType},()=>{
+            this.refs.addStorageDialog.show();
+        });
+    }
+    cutStorage(){
+
+    }
+    inNumInput(type,e){
+        this.state[type] = e.target.value;
+        // this.setState({inNum:e.target.value});
+    }
+    addStorageSubmit(){
+        let {inNum,goodsId,storageType} = this.state;
+        let _this = this;
+        if(!inNum){
+            Pubsub.publish("showMsg",["wrong","请输入库存数量"]);
+            return false;
+        }
+        let request = {innum:storageType==1?inNum:-inNum,goodsId};
+        $.ajax({
+            url:commonUrl + "/djt/web/goodsmang/addleft.do",
+            type:"get",
+            dataType:"json",
+            data:request,
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success","操作成功"]);
+                    _this.getList();
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        });
+        console.log(inNum,goodsId)
+    }
     render(){
-        let {pager,listRequest,list,checkedAll} =this.state;
+        let {pager,listRequest,list,checkedAll,saleSort,storageType} =this.state;
         return(
             <div>
                 <Layout mark = "sp" bread = {["商品管理","商品列表"]}>
@@ -249,7 +309,7 @@ export default class List extends React.Component{
 
                        </div>
                     </div>
-                    <div>
+                    <div className="m-b-20">
                         <RangePicker onChange={this.datePickerChange}
                                      disabledDate={this.disabledDate}
                                      size = "large"
@@ -270,7 +330,12 @@ export default class List extends React.Component{
                                     <td className="col-8">商品分类</td>
                                     <td className="col-8">单位</td>
                                     <td className="col-8">价格(元)</td>
-                                    <td className="col-8">库存</td>
+                                    <td className= {saleSort==1?"col-8 sort-des":"col-8 sort-asc"}
+                                        onClick = {this.sortFn.bind(this,"goodsLeft","saleSort")}>
+                                        <span className="m-r-5">库存</span>
+                                        <i className="sort-bottom"/>
+                                        <i className="sort-top"/>
+                                    </td>
                                     <td className="col-8">销量</td>
                                     <td className="col-10">更新时间</td>
                                     <td className="col-8">状态</td>
@@ -281,10 +346,10 @@ export default class List extends React.Component{
                             {
                                 list.length>0 && list.map((item,index)=>{
                                     return(
-                                        <tr key = {index}>
+                                        <tr key = {index} className={item.warn>item.goodsLeft?"font-color-yellow":""}>
                                             <td className="text-left p-l-15">
                                                 <RUI.Checkbox onChange = {this.check.bind(this,item,index)}
-                                                              selected = {item.checked?1:0}> {item.goodsName}</RUI.Checkbox>
+                                                              selected = {item.checked?1:0}> {item.goodsname}</RUI.Checkbox>
                                             </td>
                                             <td>{item.brand}</td>
                                             <td>{item.series}</td>
@@ -303,8 +368,8 @@ export default class List extends React.Component{
                                                     <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
                                                 </div>
                                                 <div>
-                                                    <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;增加库存&nbsp; |</a>
-                                                    <a href="javascript:;" onClick = {this.modify.bind(this,item)}>&nbsp;减少库存&nbsp; |</a>
+                                                    <a href="javascript:;" onClick = {this.addStorage.bind(this,item,"add")}>&nbsp;增加库存&nbsp; |</a>
+                                                    <a href="javascript:;" onClick = {this.addStorage.bind(this,item,"cut")}>&nbsp;减少库存&nbsp; |</a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -319,6 +384,14 @@ export default class List extends React.Component{
                         }
                         <Pager onPage ={this.goPage} {...pager}/>
                     </div>
+                    <RUI.Dialog ref="addStorageDialog" title={storageType==1?"增加库存":"减少库存"} draggable={false} buttons="submit,cancel"
+                                onSubmit={this.addStorageSubmit}>
+                        <div style={{width:'400px', wordWrap:'break-word'}}>
+                            <LabelInput placeholder = "库存数量"
+                                        onChange = {this.inNumInput.bind(this,"inNum")} label = "库存数量："/>
+
+                        </div>
+                    </RUI.Dialog>
                 </Layout>
             </div>
         )

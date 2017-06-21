@@ -47,3 +47,18 @@ export function unRead(paramType){
         }
     })
 }
+export function getOrderNo(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/web/ordermang/createNo.do",
+        type:"get",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        if(data.status == "0000"){
+            return data.data;
+        }else{
+            Pubsub.publish("showMsg",["wrong",data.msg]);
+            return data;
+        }
+    })
+}

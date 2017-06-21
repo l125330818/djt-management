@@ -17,7 +17,7 @@ export default class List extends React.Component{
             pager:{
                 currentPage:1,
                 pageSize:10,
-                totalNum:100,
+                totalNum:0,
             },
             listRequest:{
                 companyName:localStorage.companyName || "",
@@ -26,11 +26,12 @@ export default class List extends React.Component{
                 pageNum:1,
                 pageSize:10,
                 type:1,
+                status:""
             },
             selectValue:[
-                {key:"全部",value:""},{key:"待审核",value:1},
-                {key:"待受理",value:2},{key:"待发货",value:3},
-                {key:"作废",value:4},{key:"已完成",value:5}
+                {key:"全部",value:""},{key:"待受理",value:1},
+                {key:"待发货",value:2},{key:"待审核",value:3},
+                {key:"已完成",value:4},{key:"已退回",value:0}
             ],
             defaultSelect:{key:"全部",value:""},
             list:[],
@@ -49,6 +50,8 @@ export default class List extends React.Component{
         this.queryDetail = this.queryDetail.bind(this);
         this.addOrder = this.addOrder.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.export = this.export.bind(this);
+        this.newOrder = this.newOrder.bind(this);
       }
     componentDidMount(){
         this.getList();
@@ -79,7 +82,7 @@ export default class List extends React.Component{
         });
     }
     queryDetail(id){
-        hashHistory.push(`orderDetail?orderNo=${id}`);
+        hashHistory.push(`orderDetail?orderNo=${id}&type=${this.state.listRequest.type}`);
     }
     check(item,e){
         let {list,checkedAll} = this.state;
@@ -113,17 +116,19 @@ export default class List extends React.Component{
         this.setState({list,checkedAll});
     }
     getState(type){
+        let {listRequest} = this.state;
         switch(type * 1){
             case 1 :
                 return "待受理";
             case 2 :
-                return "待发货";
+                let str =listRequest.type==1?"待发货":"待退货";
+                return str;
             case 3 :
                 return "待审核";
             case 4 :
-                return "已完成";
+                return listRequest.type==1?"已完成":"退货完成";
             case 0 :
-                return "已退回";
+                return listRequest.type == 1?"已退回":"已拒绝";
             case -2 :
                 return "待审核";
             case -1 :
@@ -139,8 +144,10 @@ export default class List extends React.Component{
     select(e){
         let {listRequest,defaultSelect} = this.state;
         defaultSelect = e;
-        listRequest.selectType = e.value;
-        console.log(listRequest)
+        listRequest.status = e.value;
+        this.setState({},()=>{
+            this.getList();
+        });
     }
     query(){
         let {listRequest} = this.state;
@@ -149,8 +156,11 @@ export default class List extends React.Component{
             this.getList();
         });
     }
-    addOrder(){
-        hashHistory.push("addOrder");
+    newOrder(){
+        hashHistory.push(`addOrder?type=${this.state.listRequest.type}`);
+    }
+    addOrder(id){
+        hashHistory.push(`addOrder?orderNo=${id}&type=${this.state.listRequest.type}`);
     }
     typeClick(type){
         let {listRequest} = this.state;
@@ -159,8 +169,38 @@ export default class List extends React.Component{
             this.getList(1);
         });
     }
+    export(){
+        let {list} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.orderno);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择需要导出的订单");
+            return;
+        }
+        window.open(commonUrl + "/djt//web/export/orderexp.do?orderNo="+JSON.stringify(arr))
+        // $.ajax({
+        //     url:commonUrl + "/djt//web/export/orderexp.do",
+        //     type:"post",
+        //     dataType:"json",
+        //     data:{orderNo:JSON.stringify(arr)},
+        //     success(){
+        //
+        //     }
+        // })
+    }
     render(){
         let {pager,list,checkedAll,selectValue,defaultSelect,unRead,listRequest} =this.state;
+        let orderStatus = selectValue;
+        if(listRequest.type == -1){
+            orderStatus = [
+                {key:"全部",value:""},{key:"待审核",value:-2},
+                {key:"已拒绝",value:-1},{key:"已退回",value:0},
+            ]
+        }
         return(
             <div>
                 <Layout mark = "dd" bread = {["订单管理","订单列表"]}>
@@ -177,14 +217,14 @@ export default class List extends React.Component{
                     <div className="search-div">
                         <RUI.Input   onChange = {this.inputChange} placeholder = "请输入订单号或公司名称"/>
                         <label className="m-l-r-10">订单状态：</label>
-                        <RUI.Select  data = {selectValue}
+                        <RUI.Select  data = {orderStatus}
                                      className = "w-90 rui-theme-1 "
                                      callback = {this.select}
                                      value = {defaultSelect}/>
 
                         <RUI.Button onClick = {this.query} className = "primary" >查询</RUI.Button>
                         <div className="right">
-                            <RUI.Button  className = "primary" onClick = {this.addOrder}>添加订单</RUI.Button>
+                            <RUI.Button  className = "primary" onClick = {this.newOrder}>添加订单</RUI.Button>
                             <RUI.Button onClick = {this.export}>导出</RUI.Button>
                         </div>
                     </div>
@@ -207,8 +247,14 @@ export default class List extends React.Component{
                             <tbody>
                             {
                                 list.length>0 && list.map((item,index)=>{
+                                    let styleStr = "";
+                                    if(item.status == 0){
+                                        styleStr = "font-color-red";
+                                    }else if(item.warn == 1){
+                                        styleStr = "font-color-yellow"
+                                    }
                                     return(
-                                        <tr key = {index} className="font-color-red">
+                                        <tr key = {index} className={styleStr}>
                                             <td className="text-left p-l-15 relative">
                                                 {
                                                     item.unread==1 && <span className="circle"/>
@@ -224,7 +270,7 @@ export default class List extends React.Component{
                                             <td>{item.handler}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.queryDetail.bind(this,item.orderno)}>查看&nbsp;|</a>
-                                                <a href="javascript:;">&nbsp;新增</a>
+                                                <a href="javascript:;" onClick = {this.addOrder.bind(this,item.orderno)}>&nbsp;新增</a>
                                             </td>
                                         </tr>
                                     )

@@ -5,8 +5,12 @@ import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 
 import LimitInput from "../../component/limitInput";
+import {orderDetail,getOrderNo} from "../ajax/orderAjax";
 import {hashHistory} from "react-router";
-let numReg = /^\d+$/;
+import {customerList} from "../ajax/customerAjax";
+import {commodityList} from "../ajax/commodityAjax";
+let qqReg = /^\d+$/;
+let accountReg = /^[0-9a-zA-Z]+$/g;
 export default class List extends React.Component{
     // 构造
     constructor(props) {
@@ -16,7 +20,7 @@ export default class List extends React.Component{
             pager:{
                 currentPage:1,
                 pageSize:10,
-                totalNum:100,
+                totalNum:0,
             },
             listRequest:{
                 userid:"",
@@ -30,127 +34,200 @@ export default class List extends React.Component{
                 {key:"待受理",value:2},{key:"待发货",value:3},
                 {key:"作废",value:4},{key:"已完成",value:5}
             ],
+            companyListRequest:{
+                userid: localStorage.userid || "",
+                query:"",
+                companyName:localStorage.companyName || "",
+                pageNum:1,
+                selectType:1,
+                pageSize:1000000,
+                keyword:"",
+                seq:""
+            },
+            goodsRequest:{
+                companyName:localStorage.companyName || "",
+                brand:"",
+                series:"",
+                classify:"",
+                goodsName:"",
+                stdate : "",
+                endate : "",
+                keyword:"",
+                pageNum:1,
+                seq:"",
+                pageSize:10000,
+
+            },
+            addRequest:{
+                companyName:localStorage.companyName || "",
+                orderNo:"DH13213123",
+                goodsInfo:[],
+                remark:"备注一下",
+                clientId:"72f56663-e4b7-47ea-9377-afc7e37821ff",
+                type:1,
+            },
             defaultSelect:{key:"全部",value:""},
-            list:[{
-                "order_no": "111111",
-                "clientname": "成都俊美化妆品",
-                "order_money": 20.0,
-                "brand": "韩束" ,
-                "order_time": "2017-12-12 17:50",
-                "status": 1,
-                "flag": 0
-            },{
-                "order_no": "111111",
-                "clientname": "成都俊美化妆品",
-                "order_money": 20.0,
-                "brand": "韩束" ,
-                "order_time": "2017-12-12 17:50",
-                "status": 1,
-                "flag": 0
-            }],
+            list:[],
             ids:[],
             companyList:[],
+            goodsList:[],
+            companySelect:{key:'无',value:'0'},
+            goodsSelect:{key:'无',value:'0'},
             companyShow:false,
             checkedAll:false,
+            orderNo:"Dadqws12313",
         };
-        this.check = this.check.bind(this);
-        this.checkAll = this.checkAll.bind(this);
-        this.inputChange = this.inputChange.bind(this);
-        this.select = this.select.bind(this);
-        this.query = this.query.bind(this);
-        this.queryDetail = this.queryDetail.bind(this);
+        this.selectCompany = this.selectCompany.bind(this);
+        this.orderNoChange = this.orderNoChange.bind(this);
+        this.saveData = this.saveData.bind(this);
+        this.orderNo = this.props.location.query.orderNo;
+        this.type = this.props.location.query.type;
     }
 
     componentDidMount() {
-        this.initEvent();
+        if(this.orderNo){
+            this.getDetail();
+        }
+        this.getOrderNo();
     }
-    initEvent(){
-        let _this = this;
-        $(document).click(function(e){
-            var _con = $('.company-list');   // 设置目标区域
-            if(!_con.is(e.target) && _con.has(e.target).length === 0){
-                _this.setState({companyShow:false});
-            }
+    getOrderNo(){
+        getOrderNo().then((data)=>{
+            let {addRequest} = this.state;
+            addRequest.orderNo = data;
+            this.setState({})
+        })
+    }
+    getDetail(){
+        let request = {orderNo:this.orderNo};
+        orderDetail(request).then((data)=>{
+            this.setState({
+                list:data.dataList,
+            },()=>{
+                this.getTotalPrice();
+            });
         });
     }
-    getList(){}
-    queryDetail(){
-        hashHistory.push("orderDetail");
-    }
-    check(item,e){
-        let {list,checkedAll} = this.state;
-        let temp = 0;
-        if(e.data.selected ==1){
-            item.checked = true;
-        }else{
-            item.checked = false;
-        }
-        list.map((list)=>{
-            if(list.checked){
-                temp +=1;
-            }
+    getTotalPrice(){
+        let {list} = this.state;
+        let totalPrice = 0;
+        list.map((item)=>{
+            totalPrice += item.price * item.count;
         });
-        checkedAll = temp == list.length?true:false
-        this.setState({list:list,checkedAll});
-    }
-    checkAll(e){
-        let {list,checkedAll} = this.state;
-        if(e.data.selected==1){
-            list.map((item)=>{
-                item.checked = true;
-            });
-            checkedAll = true;
-        }else{
-            list.map((item)=>{
-                item.checked = false;
-            });
-            checkedAll = false;
-        }
-        this.setState({list,checkedAll});
+        this.setState({totalPrice});
     }
     inputChange(item,type,e){
         let {list} = this.state;
         item[type] = e.target.value;
-        this.setState({list});
+        item.totalPrice = item.price * e.target.value;
+        this.setState({list},()=>{
+            this.getTotalPrice();
+        });
     }
-    select(e){
-        let {listRequest,defaultSelect} = this.state;
-        defaultSelect = e;
-        listRequest.selectType = e.value;
-        console.log(listRequest)
+
+    selectCompany(type,e){
+        let {list} = this.state;
+        if(type == "goodsSelect"){
+            list.push(Object.assign(e.detail,{count:1}));
+        }
+        let jsonStr = JSON.stringify(list);
+        let arr = JSON.parse(jsonStr);
+        this.state[type] =e;
+        this.setState({list:arr},()=>{
+            this.getTotalPrice();
+        });
     }
-    query(){
-        let {listRequest} = this.state;
-        console.log(listRequest)
-    }
-    inputChange(type,e){
-        if(e.target.value == "333"){
-            let companyList = [{key:"杭州新公司"},{key:"成都新公司"},{key:"四川新公司"},{key:"哈哈公司"},{key:1}]
-            this.setState({companyList,companyShow:true})
+    filterHandle(type,e){
+        let {goodsRequest,companyListRequest} = this.state;
+
+        if(type == "company"){
+            commodityList(goodsRequest).then((data)=>{
+
+            })
+        }else if(type == "goods"){
+            goodsRequest.goodsName = e;
+            commodityList(goodsRequest).then((data)=>{
+                let dataList = data.dataList;
+                let goodsList = [];
+                dataList.map((item)=>{
+                    goodsList.push({key:item.goodsname,value:item.goodsId,detail:item});
+                });
+                this.setState({goodsList});
+            })
         }
     }
-    companyClick(){
+    orderNoChange(type,e){
+        let {addRequest} = this.state;
+        addRequest[type] = e.target.value;
+        this.setState({});
+    }
+    delete(index){
+        let {list} = this.state;
+        list.splice(index,1);
+        this.setState({list},()=>{
+            this.getTotalPrice();
+        });
+    }
+    saveData(){
+        let {list,addRequest} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            arr.push({id:item.goodsid,num:item.count});
+        });
+        addRequest.goodsInfo = JSON.stringify(arr);
+        $.ajax({
+            url:commonUrl + "/djt/web/ordermang/makeorder.do",
+            type:"post",
+            dataType:"json",
+            data:addRequest,
+            success(){
 
+            }
+        })
+console.log(addRequest,arr)
     }
     render(){
-        let {list,checkedAll,selectValue,defaultSelect,companyList,companyShow} =this.state;
+        let {list,goodsList,goodsSelect,defaultSelect,companyList,companySelect,orderNo,totalPrice,addRequest} =this.state;
         return(
             <div>
-                <Layout mark = "dd" bread = {["订单管理","添加订货单"]}>
+                <Layout mark = "dd" bread = {["订单管理",this.type==1?"添加订货单":"添加退货单"]}>
                     <div className="search-div relative">
-                        <label className="m-l-r-10">公司：</label>
-                        <RUI.Input   onChange = {this.inputChange.bind(this,"company")} placeholder = "请输入公司名称"/>
-                        <ul className="company-list" style = {{display:companyShow?"block":"none"}}>
-                            {
-                                companyList.map((item,index)=>{
-                                    return (<li key = {index} onClick = {this.companyClick.bind(this,item)}>{item.key}</li>)
-                                })
-                            }
-                        </ul>
-                        <label className="m-l-r-10">商品：</label>
-                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入公司名称"/>
-                        <label className="m-l-r-10">时间：</label>
-                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入公司名称"/>
+                        <label className=""><span className="require">*</span>公司名称：</label>
+                        <RUI.Select
+                            data={companyList}
+                            value={companySelect}
+                            filter={true}
+                            className="rui-theme-1 w-200"
+                            callback = {this.selectCompany.bind(this,"companySelect")}
+                            stuff={true}
+                            filterCallback={this.filterHandle.bind(this,"company")}>
+                        </RUI.Select>
+                        <label className="m-l-20"><span className="require">*</span>商品名称：</label>
+                        <RUI.Select
+                            data={goodsList}
+                            value={goodsSelect}
+                            filter={true}
+                            className="rui-theme-1 w-200"
+                            callback = {this.selectCompany.bind(this,"goodsSelect")}
+                            stuff={true}
+                            filterCallback={this.filterHandle.bind(this,"goods")}>
+                        </RUI.Select>
+                        <label  className="m-l-20">时间：</label>
+                        <LimitInput   value = {new Date().Format("yyyy-MM-dd hh : mm : ss")}
+                                      require = {true}
+                                      disable = {true}
+                         />
+                        <label  className="m-l-20">订单号：</label>
+                        <RUI.Input   value = {addRequest.orderNo}
+                                      onChange = {this.orderNoChange.bind(this,"orderNo")} />
+                    </div>
+                    <div className="total-div">
+                        <h3>
+                            合计:
+                            <span className="font-color-red">{totalPrice}</span>
+                            <label  className="m-l-20">备注：</label>
+                            <RUI.Input   onChange = {this.orderNoChange.bind(this,"remark")} />
+                        </h3>
+
                     </div>
                     <div className="order-content">
                         <table className="table">
@@ -174,24 +251,25 @@ export default class List extends React.Component{
                                     return(
                                         <tr key = {index}>
                                             <td>
-                                                {item.clientname}
+                                                {item.goodsname}
                                             </td>
-                                            <td>{item.clientname}</td>
-                                            <td>{item.order_money}</td>
                                             <td>{item.brand}</td>
-                                            <td>{item.order_time}</td>
+                                            <td>{item.series}</td>
+                                            <td>{item.unit}</td>
+                                            <td>{item.price}</td>
                                             <td>
-                                                <LimitInput   value = {item.order_money}
+                                                <LimitInput   value = {item.count}
                                                               className = "w-70"
-                                                              onChange = {this.inputChange.bind(this,item,"order_money")}
-                                                              reg = {numReg} />
+                                                              reg = {qqReg}
+                                                              onChange = {this.inputChange.bind(this,item,"count")}
+                                                              />
                                             </td>
-                                            <td>{item.order_time}</td>
-                                            <td>{item.order_time}</td>
-                                            <td>{item.order_time}</td>
+                                            <td>{(item.count * item.price).toFixed(2)}</td>
+                                            <td>{item.goodsnum}</td>
+                                            <td>{item.barcode}</td>
 
                                             <td>
-                                                <a href="javascript:;" onClick = {this.delete}>删除</a>
+                                                <a href="javascript:;" onClick = {this.delete.bind(this,index)}>删除</a>
                                             </td>
                                         </tr>
                                     )
@@ -204,7 +282,7 @@ export default class List extends React.Component{
                             <div className="left">
                                 <RUI.Button href="javascript:window.history.go(-1)">返回</RUI.Button>
                                 <RUI.Button className="primary" style={{marginLeft:"10px"}}
-                                            onClick={this.recharge}>生成订单</RUI.Button>
+                                            onClick={this.saveData}>{this.type==1?"生成订货单":"生成退货单"}</RUI.Button>
                             </div>
                         </div>
                     </div>

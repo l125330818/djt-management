@@ -5,7 +5,7 @@ import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
-import {rechargeList} from "../ajax/customerAjax";
+import {storageList} from "../ajax/customerAjax";
 import Pubsub from "../../util/pubsub";
 
 export default class List extends React.Component{
@@ -20,12 +20,13 @@ export default class List extends React.Component{
                 totalNum:0,
             },
             listRequest:{
-                keyword:"chargetime",
-                query:"",
-                seq:"desc",
+                product:"",
                 pageSize:10,
                 pageNum:1,
+                keyword:"",
+                seq:"",
                 companyName:localStorage.companyName || "",
+                userId:localStorage.userid || "",
             },
             sortState:2,
             checkedAll:false,
@@ -42,7 +43,7 @@ export default class List extends React.Component{
     }
     getList(pageNo=1){
         let {pager} = this.state;
-        rechargeList(this.state.listRequest).then((data)=>{
+        storageList(this.state.listRequest).then((data)=>{
             pager.totalNum = data.count;
             pager.currentPage = pageNo;
             this.setState({list:data.dataList || []});
@@ -110,32 +111,34 @@ export default class List extends React.Component{
     }
     inputChange(e){
         let {listRequest} = this.state;
-        listRequest.query = e.target.value;
+        listRequest.product = e.target.value;
     }
     render(){
         let {pager,sortState,list} =this.state;
         return(
             <div>
-                <Layout mark = "cz" bread = {["充值记录","充值列表"]}>
+                <Layout mark = "rk" bread = {["入库记录","入库记录"]}>
                     <div className="search-div">
-                        <RUI.Input   onChange = {this.inputChange} className = "w-280" placeholder = "请输入公司名称或用户名或充值品牌"/>
+                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入商品名称"/>
                         <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
                     </div>
                     <div className="order-content">
                         <table className="table">
                             <thead>
                             <tr>
-                                <td className="col-15">充值公司</td>
-                                <td className="col-15">充值用户</td>
-                                <td className="col-15">充值品牌</td>
-                                <td className="col-10">充值金额</td>
+                                <td className="col-10">商品名称</td>
+                                <td className="col-10">品牌</td>
+                                <td className="col-10">系列</td>
+                                <td className="col-10">商品分类</td>
+                                <td className="col-10">单位</td>
+                                <td className="col-10">价格(元)</td>
+                                <td className="col-10">入库数量</td>
                                 <td className= {sortState==1?"col-15 sort-des":"col-15 sort-asc"}
-                                    onClick = {this.sortFn.bind(this,"chargetime","sortState")}>
-                                    <span className="m-r-5">充值时间</span>
+                                    onClick = {this.sortFn.bind(this,"intime","sortState")}>
+                                    <span className="m-r-5">入库时间</span>
                                     <i className="sort-bottom"/>
                                     <i className="sort-top"/>
                                 </td>
-                                <td className="col-10">充值类型</td>
                                 <td className="col-10">经手人</td>
                                 <td className="col-10">备注</td>
                             </tr>
@@ -144,14 +147,16 @@ export default class List extends React.Component{
                             {
                                 list.length>0 && list.map((item,i)=>{
                                     return(
-                                        <tr key = {i} className={item.chargetype==1?"":"font-color-red"}>
-                                            <td>{item.clientname}</td>
-                                            <td>{item.name}</td>
+                                        <tr key = {i}>
+                                            <td>{item.product}</td>
                                             <td>{item.brand}</td>
-                                            <td>{item.money}</td>
-                                            <td>{item.chargetime}</td>
-                                            <td>{item.chargetype==1?"正向充值":"逆向充值"}</td>
-                                            <td>{item.agentname}</td>
+                                            <td>{item.series}</td>
+                                            <td>{item.classify}</td>
+                                            <td>{item.unit}</td>
+                                            <td>{item.price}</td>
+                                            <td>{item.innum}</td>
+                                            <td>{item.intime}</td>
+                                            <td>{item.handler}</td>
                                             <td>{item.remark || "无"}</td>
                                         </tr>
                                     )

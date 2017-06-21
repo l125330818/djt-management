@@ -25,6 +25,7 @@ import {
     customerDetail,
     commodityAttr,
     seriesList,
+    storageList,
 } from "./entryConfig";
 //最终渲染
 ReactDOM.render((
@@ -45,5 +46,6 @@ ReactDOM.render((
         <Route  path = "customerDetail" getComponent={customerDetail}/>
         <Route  path = "commodityAttr" getComponent={commodityAttr}/>
         <Route  path = "seriesList" getComponent={seriesList}/>
+        <Route  path = "storageList" getComponent={storageList}/>
     </Router>
 ), document.getElementById('app'));

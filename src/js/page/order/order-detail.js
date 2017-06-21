@@ -39,6 +39,7 @@ export default class Detail extends React.Component{
             reason:""
         };
         this.orderNo = this.props.location.query.orderNo;
+        this.type = this.props.location.query.type;
         this.level = localStorage.level;
         this.dialogSubmit = this.dialogSubmit.bind(this);
         this.voidDialogSubmit = this.voidDialogSubmit.bind(this);
@@ -59,13 +60,14 @@ export default class Detail extends React.Component{
             case 1 :
                 return "待受理";
             case 2 :
-                return "待发货";
+                let str =this.type==1?"待发货":"待退货";
+                return str;
             case 3 :
                 return "待审核";
             case 4 :
-                return "已完成";
+                return this.type==1?"已完成":"退货完成";
             case 0 :
-                return "已退回";
+                return this.type == 1?"已退回":"已拒绝";
             case -2 :
                 return "待审核";
             case -1 :
@@ -98,12 +100,28 @@ export default class Detail extends React.Component{
                 });
                 break;
             case 2:
-                url = "/djt/web/ordermang/handle2.do";
-                this.refs.dialog.show();
+                if(this.type == -1){
+                    url = "/djt/web/ordermang/handle2.do";
+                    request.orderNo = null;
+                    request.remark = null;
+                    request.orderno = this.orderNo;
+                    request.remark2 = detail.remark;
+                    RUI.DialogManager.confirm({
+                        message:"您确定要退货吗？",
+                        title:"退货",
+                        submit(){
+                            _this.handleAjax(url,request);
+                        }
+                    });
+                }else{
+                    this.refs.dialog.show();
+                }
                 return;
             case 3:
                 url = "/djt/web/ordermang/handle3.do";
-                request.actualMoney = detail.realMoney;
+                if(this.type==1){
+                    request.actualMoney = detail.realMoney;
+                }
                 if(parseFloat(detail.realMoney) > parseFloat(detail.money)){
                     Pubsub.publish("showMsg",["wrong","实付金额不能大于订单金额"]);
                     return;
@@ -124,6 +142,7 @@ export default class Detail extends React.Component{
     }
     handleAjax(url,request){
         let _this = this;
+        request.type = this.type;
         $.ajax({
             url:commonUrl+url,
             data:request,
@@ -194,8 +213,8 @@ export default class Detail extends React.Component{
     }
     render(){
         let {detail,dispatchGoods,reason} = this.state;
-        console.log(detail);
         let level = this.level;
+        let type = this.type;
         let status = detail.status;
         return(
             <Layout mark = "dd" bread = {["订单管理","订单列表"]}>
@@ -238,7 +257,7 @@ export default class Detail extends React.Component{
                     </table>
                     <div>
                         {
-                            (level == 5) && status == 3 &&
+                            (level == 5 && type!=-1) && status == 3 &&
                             <LabelInput onChange = {this.changeInput.bind(this,"realMoney")}
                                         require = {true}
                                         value = {detail.realMoney}
@@ -250,7 +269,7 @@ export default class Detail extends React.Component{
 
                         <LabelArea onChange = {this.changeInput.bind(this,"remark")}
                                    value =  {detail.remark}
-                                   disable = {false}
+                                   disable = {(status ==0 || status == 4)}
                                    require = {true}
                                    label = "备注："/>
                     </div>
@@ -268,7 +287,7 @@ export default class Detail extends React.Component{
                             (level == 4) && status == 2 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
-                                        onClick={this.handleOrder.bind(this,2)}>发货</RUI.Button>
+                                        onClick={this.handleOrder.bind(this,2)}>{type==1?"发货":"退货"}</RUI.Button>
                         }
                         {
                             (level == 5) && status == 3 &&
@@ -280,7 +299,7 @@ export default class Detail extends React.Component{
                             status !=0 && status != 4 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
-                                        onClick={this.handleOrder.bind(this,4)}>作废</RUI.Button>
+                                        onClick={this.handleOrder.bind(this,4)}>{type==1?"作废":"拒绝"}</RUI.Button>
                         }
 
                         <RUI.Button className="primary"
@@ -305,12 +324,12 @@ export default class Detail extends React.Component{
 
                     </div>
                 </RUI.Dialog>
-                <RUI.Dialog ref="voidDialog" title={"作废"} draggable={false} buttons="submit,cancel"
+                <RUI.Dialog ref="voidDialog" title={type==1?"作废":"拒绝退货"} draggable={false} buttons="submit,cancel"
                             onSubmit={this.voidDialogSubmit}>
                     <div style={{width:'400px', wordWrap:'break-word'}}>
-                        <LabelArea placeholder = "作废理由"
+                        <LabelArea placeholder ={type==1? "作废理由": "拒绝理由"}
                                    value = {reason}
-                                   onChange = {this.handleVoidInput.bind(this,"reason")} label = "作废理由："/>
+                                   onChange = {this.handleVoidInput.bind(this,"reason")} label = {type==1?"作废理由：":"拒绝理由："}/>
 
                     </div>
                 </RUI.Dialog>

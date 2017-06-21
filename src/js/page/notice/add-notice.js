@@ -32,12 +32,12 @@ export default class Add extends React.Component{
                 content:"",
                 imgloc:"",
                 relationid:"",
-                goodsName:"",
-                ranged:"一级代理商",
+                relationname:"",
+                ranged:"全部",
             },
             defaultType:{key:"政策活动",value:1},
             defaultLocation:{key:"轮播图",value:1},
-            defaultranged:{key:"一级代理商",value:1},
+            defaultranged:{key:"全部",value:0},
             noticeType : 1,
             file:[],
             goodsData:[],
@@ -57,7 +57,7 @@ export default class Add extends React.Component{
             brand:"",
             series:"",
             classify:"",
-            goodsName:"",
+            relationname:"",
             stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
             endate : moment(new Date()).format("YYYY-MM-DD"),
             keyword:"",
@@ -84,6 +84,7 @@ export default class Add extends React.Component{
                     defaultType:{key:data.type,value:data.type},
                     defaultLocation:{key:data.location,value:data.location},
                     defaultranged:{key:data.ranged,value:data.ranged},
+                    goodsSelect:{key:data.relationname,value:data.relationid},
                 });
             });
         }
@@ -158,7 +159,7 @@ export default class Add extends React.Component{
         });
     }
     filterHandle(e){
-        this.listRequest.goodsName = e;
+        this.listRequest.relationname = e;
         commodityList(this.listRequest).then((data)=>{
             let list = data.dataList || [];
             let arr = [];
@@ -172,7 +173,7 @@ export default class Add extends React.Component{
     selectGoods(e){
         let {request} = this.state;
         request.relationid = e.value;
-        request.goodsName = e.key;
+        request.relationname = e.key;
         this.setState({goodsSelect:e});
     }
     render(){
@@ -235,6 +236,7 @@ export default class Add extends React.Component{
                                     data={goodsData}
                                     value={goodsSelect}
                                     filter={true}
+                                    disable = {!!type}
                                     className="rui-theme-1"
                                     callback = {this.selectGoods}
                                     stuff={true}
@@ -246,7 +248,7 @@ export default class Add extends React.Component{
                     <LabelSelect require = {true}
                                  label = "推广范围："
                                  disable = {!!type}
-                                 data = {[{key:"一级代理商",value:1},{key:"二级代理商",value:2},{key:"三级代理商",value:3}]}
+                                 data = {[{key:"全部",value:""},{key:"一级代理商",value:1},{key:"二级代理商",value:2},{key:"三级代理商",value:3}]}
                                  callback = {this.selectranged}
                                  default = {defaultranged}>
                     </LabelSelect>

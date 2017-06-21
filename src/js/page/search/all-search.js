@@ -85,10 +85,14 @@ export default class List extends React.Component{
         })
     }
     goPage(page){
-        let {listRequest} = this.state;
+        let {listRequest,selectType} = this.state;
         listRequest.pageNum = page;
         this.setState({},()=>{
-            this.getList(page);
+            if(selectType == 1){
+                this.getGoodsList(page);
+            }else{
+                this.getBalanceList(page);
+            }
         });
     }
     queryDetail(){
@@ -147,8 +151,9 @@ export default class List extends React.Component{
         this.setState({});
     }
     select(e){
-        let {defaultSelect} = this.state;
+        let {defaultSelect,listRequest} = this.state;
         defaultSelect = e;
+        listRequest.pageNum = 1;
         this.setState({selectType:e.value},()=>{
             if(e.value == 1){
                 this.getGoodsList();

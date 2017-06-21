@@ -5,8 +5,9 @@ import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
-import Data from "../../component/Data";
-import {customerList} from "../ajax/customerAjax";
+import LabelInput from "../../component/label-input";
+const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,9}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
+import {customerList,getMoneySetting} from "../ajax/customerAjax";
 export default class List extends React.Component{
     // 构造
     constructor(props) {
@@ -24,11 +25,16 @@ export default class List extends React.Component{
                 companyName:localStorage.companyName || "",
                 pageNum:1,
                 selectType:1,
-                pageSize:10
+                pageSize:10,
+                keyword:"level",
+                seq:"desc"
             },
             list:[],
             defaultSelect:{key:"正常",value:1},
             checkedAll:false,
+            balance:0,
+            moneySort:1,
+            levelSort:1,
         };
         this.recharge = this.recharge.bind(this);
         this.sortFn = this.sortFn.bind(this);
@@ -39,7 +45,7 @@ export default class List extends React.Component{
         this.select = this.select.bind(this);
         this.goPage = this.goPage.bind(this);
         this.batchExport = this.batchExport.bind(this);
-        this.goPage = this.goPage.bind(this);
+        this.balanceInput = this.balanceInput.bind(this);
         this.level = localStorage.level;
     }
     componentDidMount(){
@@ -55,7 +61,7 @@ export default class List extends React.Component{
         })
     }
     goPage(page){
-        let {listRequest} = this.state;
+        let {listRequest,pager} = this.state;
         listRequest.pageNum = page;
         this.setState({},()=>{
             this.getList(page);
@@ -71,7 +77,10 @@ export default class List extends React.Component{
         hashHistory.push("addCustomer");
     }
     set(){
-
+        getMoneySetting().then((data)=>{
+            this.setState({balance:data.moneySetting || 0});
+        });
+        this.refs.dialog.show();
     }
     search(){
         let {listRequest} = this.state;
@@ -115,10 +124,14 @@ export default class List extends React.Component{
         }
         this.setState({list,checkedAll});
     }
-    sortFn(type){
-        let sortNum = this.state.listRequest[type]==1?2:1;
-        this.state.listRequest[type] = sortNum;
-        this.setState({});
+    sortFn(type,sortType){
+        let {listRequest} = this.state;
+        listRequest.keyword = type;
+        this.state[sortType] = this.state[sortType]==1?2:1;
+        listRequest.seq = listRequest.seq == "desc"?"asc":"desc"
+        this.setState({},()=>{
+            this.getList();
+        });
     }
     select(e){
         let {listRequest,defaultSelect} = this.state;
@@ -126,12 +139,8 @@ export default class List extends React.Component{
         listRequest.selectType = e.value;
         console.log(listRequest)
     }
-    goPage(pageNum){
-        let {listRequest} = this.state;
-        listRequest.pageNum = pageNum;
-        this.setState({listRequest},()=>{
-            this.getList();
-        })
+    balanceInput(e){
+        this.setState({balance:e.target.value});
     }
     batchExport(){
         let {list} = this.state;
@@ -150,7 +159,7 @@ export default class List extends React.Component{
         hashHistory.push(`customerDetail?clientId=${clientId}`);
     }
     render(){
-        let {pager,customerSort,list,checkedAll,listRequest,defaultSelect} =this.state;
+        let {pager,customerSort,list,checkedAll,listRequest,defaultSelect,balance,levelSort,moneySort} =this.state;
         let level = this.level;
         return(
             <div>
@@ -185,14 +194,14 @@ export default class List extends React.Component{
                                 <td className="col-10">姓名</td>
                                 <td className="col-15">帐号</td>
                                 <td className="col-15">地区</td>
-                                <td className= {listRequest.customerSort==1?"col-10 sort-des":"col-10 sort-asc"}
-                                    onClick = {this.sortFn.bind(this,"customerSort")}>
+                                <td className= {levelSort==1?"col-10 sort-des":"col-10 sort-asc"}
+                                    onClick = {this.sortFn.bind(this,"level","levelSort")}>
                                     <span className="m-r-5">客户级别</span>
                                     <i className="sort-bottom"/>
                                     <i className="sort-top"/>
                                 </td>
-                                <td className= {listRequest.amountSort==1?"col-10 sort-des":"col-10 sort-asc"}
-                                    onClick = {this.sortFn.bind(this,"amountSort")}>
+                                <td className= {moneySort==1?"col-10 sort-des":"col-10 sort-asc"}
+                                    onClick = {this.sortFn.bind(this,"money","moneySort")}>
                                     <span className="m-r-5">总金额</span>
                                     <i className="sort-bottom"/>
                                     <i className="sort-top"/>
@@ -241,6 +250,19 @@ export default class List extends React.Component{
                         {
                             list.length==0 && <div className="no-data">暂时没有数据哦</div>
                         }
+                        <RUI.Dialog ref="dialog" title={"余额设置"} draggable={false} buttons="submit,cancel"
+                                    onSubmit={this.dialogSubmit}>
+                            <div style={{width:'400px', wordWrap:'break-word',maxHeight:500}}>
+                                <LabelInput onChange = {this.balanceInput}
+                                            value = {balance}
+                                            reg = {moneyReg}
+                                            require = {true}
+                                            placeholder = "余额预警"
+                                            maxLength = {11}
+                                            label = "余额预警："/>
+
+                            </div>
+                        </RUI.Dialog>
                         <Pager onPage ={this.goPage} {...pager}/>
                     </div>
                 </Layout>

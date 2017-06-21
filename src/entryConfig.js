@@ -88,4 +88,9 @@ export const seriesList = (location, callback) => {
         callback(null, require('./js/page/commodity/commodity-series').default)
     })
 };
+export const storageList = (location, callback) => {
+    require.ensure([], require => {
+        callback(null, require('./js/page/commodity/storage-list').default)
+    })
+};
 

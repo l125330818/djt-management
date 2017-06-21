@@ -12,7 +12,7 @@ import Pubsub from "../../util/pubsub";
 import moment from 'moment';
 import {hashHistory} from "react-router";
 let qqReg = /^\d+$/;
-let accountReg = /^[0-9a-zA-Z]*$/g;
+let accountReg = /^[0-9a-zA-Z]+$/g;
 let mailReg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
 export default class Add extends React.Component{
     // 构造
@@ -67,7 +67,7 @@ export default class Add extends React.Component{
     }
     getDetail(){
         let clientId = this.clientId;
-        customerDetail({clientId}).then((data)=>{
+        customerDetail({clientId,companyName:localStorage.companyName}).then((data)=>{
             let ClientInfo = data.ClientInfo;
             let level = this.getLevel(ClientInfo.level);
             this.setState({

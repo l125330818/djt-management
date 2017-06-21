@@ -29,7 +29,7 @@ export default class Recharg extends React.Component{
                 clientId:this.props.location.query.clientId || "",
                 name:"",
                 brand:"",
-                money:0,
+                money:"",
                 chargetype:1,
                 remark:"",
             },
@@ -39,6 +39,7 @@ export default class Recharg extends React.Component{
         this.selectBrand = this.selectBrand.bind(this);
         this.checkChange = this.checkChange.bind(this);
         this.recharge = this.recharge.bind(this);
+        this.dialogSubmit = this.dialogSubmit.bind(this);
       }
       componentDidMount(){
           this.getBrandList();
@@ -47,7 +48,7 @@ export default class Recharg extends React.Component{
     getDetail(){
         let {request} = this.state;
         let clientId = this.props.location.query.clientId;
-        customerDetail({clientId}).then((data)=>{
+        customerDetail({clientId,companyName:localStorage.companyName}).then((data)=>{
             request.clientname = data.ClientInfo.clientname
             request.name = data.ClientInfo.name
             this.setState({
@@ -69,7 +70,6 @@ export default class Recharg extends React.Component{
         let {request} = this.state;
         let checked = e.data.selected==1?true : false;
         request.chargetype = checked?-1:1;
-        request.money = e.target.value;
         this.setState({checked});
     }
     selectBrand(e){
@@ -85,7 +85,31 @@ export default class Recharg extends React.Component{
         let ChineseNum = changeNumMoneyToChinese(value);
         this.setState({ChineseNum});
     }
+    checkValid(){
+
+        let {request} = this.state;
+        let flag = true;
+        let msg = "";
+        if(!request.brand){
+            msg = "请选择充值品牌";
+            flag = false;
+        }else if(!request.money){
+            msg = "请输入充值金额";
+            flag = false;
+        }
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+        }
+        return flag;
+    }
     recharge(){
+        if(!this.checkValid()){
+            return;
+        }
+        this.refs.dialog.show();
+
+    }
+    dialogSubmit(){
         let {request} = this.state;
         $.ajax({
             url:commonUrl + "/djt/web/clientmang/recharge.do",
@@ -130,15 +154,23 @@ export default class Recharg extends React.Component{
     }
     render(){
         let {checked,brandSelect,ChineseNum,defaultBrand,detail,request} = this.state;
+        let msg = "",title = "";
+        if(request.chargetype==1){
+            msg = <div>确定为{detail.clientname}的{request.brand}账户充值{request.money}元？</div>;
+            title = "确认充值";
+        }else{
+            msg = <div>确定扣除{detail.clientname}的{request.brand}账户上的{request.money}元？ <p className="font-color-red">(该操作会导致客户余额减少)</p></div> ;
+            title = "负数充值";
+        }
         return(
             <Layout mark = "kh" bread = {["客户管理","充值"]}>
                 <LabelText label = "公司名称：" text = {detail.clientname}/>
                 <LabelText label = "姓名：" text = {detail.name}/>
                 <LabelText label = "代理级别：" text = {this.getState(detail.level)}/>
                 <LabelText label = "地址：" text = {this.getAddressStr(detail)}/>
-                <LabelText label = "联系方式：" text = {detail.tel}/>
-                <LabelText label = "QQ：" text = {detail.qq}/>
-                <LabelText label = "微信：" text = {detail.weixin}/>
+                <LabelText label = "联系方式：" text = {detail.tel || "无"}/>
+                <LabelText label = "QQ：" text = {detail.qq || "无"}/>
+                <LabelText label = "微信：" text = {detail.weixin || "无"}/>
                 <RUI.Checkbox value="1" className = "m-l-20"  onChange={this.checkChange}>
                     充值操作失误，可进行负数充值
                 </RUI.Checkbox>
@@ -154,7 +186,6 @@ export default class Recharg extends React.Component{
                             value = {request.money}
                             label = {checked? "负充值金额：": "充值金额："}/>
                 <LabelInput onChange = {this.changeInput1.bind(this,"remark")}
-                            require = {true}
                             label = {"备注"}/>
                 <div className="footer js-footer">
                     <div className="left">
@@ -163,6 +194,12 @@ export default class Recharg extends React.Component{
                                     onClick={this.recharge}>充值</RUI.Button>
                     </div>
                 </div>
+                <RUI.Dialog ref="dialog" title={title} draggable={false} buttons="submit,cancel"
+                            onSubmit={this.dialogSubmit}>
+                    <div style={{width:'400px', wordWrap:'break-word',maxHeight:500}}>
+                        {msg}
+                    </div>
+                </RUI.Dialog>
             </Layout>
         )
     }
