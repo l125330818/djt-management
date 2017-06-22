@@ -8,7 +8,7 @@ import LimitInput from "../../component/limitInput";
 import {orderDetail,getOrderNo} from "../ajax/orderAjax";
 import {hashHistory} from "react-router";
 import {customerList} from "../ajax/customerAjax";
-import {commodityList} from "../ajax/commodityAjax";
+import {commodityList,getCompany} from "../ajax/commodityAjax";
 let qqReg = /^\d+$/;
 let accountReg = /^[0-9a-zA-Z]+$/g;
 export default class List extends React.Component{
@@ -63,8 +63,8 @@ export default class List extends React.Component{
                 orderNo:"DH13213123",
                 goodsInfo:[],
                 remark:"备注一下",
-                clientId:"72f56663-e4b7-47ea-9377-afc7e37821ff",
-                type:1,
+                clientId:"",
+                type:this.props.location.query.type,
             },
             defaultSelect:{key:"全部",value:""},
             list:[],
@@ -75,7 +75,7 @@ export default class List extends React.Component{
             goodsSelect:{key:'无',value:'0'},
             companyShow:false,
             checkedAll:false,
-            orderNo:"Dadqws12313",
+            orderNo:"",
         };
         this.selectCompany = this.selectCompany.bind(this);
         this.orderNoChange = this.orderNoChange.bind(this);
@@ -125,9 +125,11 @@ export default class List extends React.Component{
     }
 
     selectCompany(type,e){
-        let {list} = this.state;
+        let {list,addRequest} = this.state;
         if(type == "goodsSelect"){
             list.push(Object.assign(e.detail,{count:1}));
+        }else{
+            addRequest.addRequest = e.value;
         }
         let jsonStr = JSON.stringify(list);
         let arr = JSON.parse(jsonStr);
@@ -137,11 +139,16 @@ export default class List extends React.Component{
         });
     }
     filterHandle(type,e){
-        let {goodsRequest,companyListRequest} = this.state;
+        let {goodsRequest} = this.state;
 
         if(type == "company"){
-            commodityList(goodsRequest).then((data)=>{
-
+            let request = {companyName:localStorage.companyName,query:e}
+            getCompany(request).then((data)=>{
+                let companyList = [];
+                data.map((item)=>{
+                    companyList.push({key:item.clientname,value:item.clientId});
+                });
+                this.setState({companyList});
             })
         }else if(type == "goods"){
             goodsRequest.goodsName = e;
