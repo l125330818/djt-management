@@ -113,7 +113,8 @@ export default class List extends React.Component{
         list.map((item)=>{
             totalPrice += item.price * item.count;
         });
-        this.setState({totalPrice});
+        console.log(totalPrice.toFixed(2))
+        this.setState({totalPrice:totalPrice.toFixed(2)});
     }
     inputChange(item,type,e){
         let {list} = this.state;
