@@ -77,3 +77,28 @@ export function getCompany(paramType){
         }
     })
 }
+export function getWarn(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/web/clientmang/warnquery.do",
+        type:"post",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        if(data.status == "0000"){
+            return data.data;
+        }else{
+            Pubsub.publish("showMsg",["wrong",data.msg]);
+            return data;
+        }
+    })
+}
+export function setWarn(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/web/clientmang/warnset.do",
+        type:"post",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        return data;
+    })
+}

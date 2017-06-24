@@ -4,10 +4,12 @@
 import Layout from "../../component/layout";
 import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
-import {brandList} from "../ajax/commodityAjax";
+import {brandList,getWarn,setWarn} from "../ajax/commodityAjax";
 import AntUpload from "../../component/antUpload";
+import LabelInput from "../../component/label-input";
 import {hashHistory} from "react-router";
 import Pubsub from "../../util/pubsub";
+const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,9}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
 
 export default class Attr extends React.Component{
     constructor(props){
@@ -28,13 +30,16 @@ export default class Attr extends React.Component{
                 pageNum:1,
                 pageSize:10
             },
-            file:[]
+            file:[],
+            warn:0
         };
         this.addBrand = this.addBrand.bind(this);
         this.dialogSubmit = this.dialogSubmit.bind(this);
         this.uploadCallback = this.uploadCallback.bind(this);
         this.delete = this.delete.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.warnInput = this.warnInput.bind(this);
+        this.setDialogSubmit = this.setDialogSubmit.bind(this);
     }
     componentDidMount(){
         this.getList();
@@ -56,7 +61,7 @@ export default class Attr extends React.Component{
     }
     addBrand(){
         this.setState({addType:1,imgloc:"",dialogInput:"",file:[]},()=>{
-            this.refs.dialog.show();
+            this.refs.seDialog.show();
         });
     }
     uploadCallback(file){
@@ -68,7 +73,7 @@ export default class Attr extends React.Component{
     }
     addSeries(item){
         this.setState({addType:2,imgloc:"",dialogInput:"",brand:item.brand,file:[]},()=>{
-            this.refs.dialog.show();
+            this.refs.seDialog.show();
         });
     }
     dialogSubmit(){
@@ -153,8 +158,31 @@ export default class Attr extends React.Component{
         });
 
     }
+    set(item){
+        let request = {companyname:localStorage.companyName,brand:item.brand};
+        this.setState({brand:item.brand},()=>{
+            this.refs.setDialog.show();
+        });
+        getWarn(request).then((data)=>{
+            this.setState({warn:data.warn});
+        });
+    }
+    setDialogSubmit(){
+        let {warn,brand} = this.state;
+        let request = {companyname:localStorage.companyName,brand,warn};
+        setWarn(request).then((data)=>{
+            if(data.status == "0000"){
+                Pubsub.publish("showMsg",["success","设置成功"]);
+            }else{
+                Pubsub.publish("showMsg",["wrong",data.msg]);
+            }
+        })
+    }
+    warnInput(e){
+        this.state.warn = e.target.value;
+    }
     render(){
-        let {pager,brandList,addType,imgloc,brand,file,dialogInput} = this.state;
+        let {pager,brandList,addType,imgloc,brand,file,dialogInput,warn} = this.state;
         return(
             <div>
                 <Layout mark = "sp" bread = {["商品管理","商品属性"]}>
@@ -183,6 +211,7 @@ export default class Attr extends React.Component{
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkSeries.bind(this,item)}>查看&nbsp;|</a>
                                                 <a href="javascript:;" onClick = {this.addSeries.bind(this,item)}>&nbsp;新增系列&nbsp;|</a>
+                                                <a href="javascript:;" onClick = {this.set.bind(this,item)}>&nbsp;余额预警&nbsp;|</a>
                                                 <a href="javascript:;" onClick = {this.delete.bind(this,item)}>&nbsp;删除</a>
                                             </td>
                                         </tr>
@@ -196,7 +225,7 @@ export default class Attr extends React.Component{
                             brandList.length==0 && <div className="no-data">暂时没有数据哦</div>
                         }
                         <Pager onPage ={this.goPage} {...pager}/>
-                        <RUI.Dialog ref="dialog" title={addType==1?"新增品牌":"新增系列"}
+                        <RUI.Dialog ref="seDialog" title={addType==1?"新增品牌":"新增系列"}
                                     draggable={false}
                                     buttons="submit,cancel"
                                     onCancel={this.dialogCancel}
@@ -220,6 +249,22 @@ export default class Attr extends React.Component{
                                                callback = {this.uploadCallback}
                                                removePreview = {true}/>
                                 </div>
+
+                            </div>
+                        </RUI.Dialog>
+                        <RUI.Dialog ref="setDialog" title={"余额预警"} draggable={false} buttons="submit,cancel"
+                                    onSubmit={this.setDialogSubmit}>
+                            <div style={{width:'400px', wordWrap:'break-word',maxHeight:500}}>
+                                <div>
+                                    <label className = "left-label ">品牌：</label>
+                                    <span>{brand}</span>
+                                </div>
+                                <LabelInput onChange = {this.warnInput}
+                                            value = {warn}
+                                            require = {true}
+                                            placeholder = "余额预警"
+                                            maxLength = {11}
+                                            label = "余额预警："/>
 
                             </div>
                         </RUI.Dialog>

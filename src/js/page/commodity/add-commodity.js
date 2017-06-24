@@ -189,9 +189,6 @@ export default class Add extends React.Component{
         }else if(!request.warn){
             msg = "请输入库存预警";
             flag = false;
-        }else if(!request.remark){
-            msg = "请输入备注";
-            flag = false;
         }else if(!request.price){
             msg = "请输入价格";
             flag = false;
@@ -311,7 +308,6 @@ export default class Add extends React.Component{
                                 require = {true}
                                 label = "库存预警："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"remark")}
-                                require = {true}
                                 disable = {type == "check"}
                                 value = {request.remark}
                                 label = "备注："/>

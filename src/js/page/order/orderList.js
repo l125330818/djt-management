@@ -54,8 +54,21 @@ export default class List extends React.Component{
         this.newOrder = this.newOrder.bind(this);
       }
     componentDidMount(){
+        document.addEventListener("keyup",this.enterKey.bind(this));
         this.getList();
         this.getUnread();
+    }
+    enterKey(e){
+        if(e.keyCode == 13){
+            let {listRequest} = this.state;
+            listRequest.pageNum=1
+            this.setState({},()=>{
+                this.getList();
+            });
+         }
+    }
+    componentWillUnmount(){
+        document.removeEventListener("keyup",this.enterKey.bind(this));
     }
     getUnread(){
         unRead({companyName:localStorage.companyName || ""}).then((data)=>{
@@ -139,7 +152,7 @@ export default class List extends React.Component{
     }
     inputChange(e){
         let {listRequest} = this.state;
-        listRequest.keyword = e.target.value;
+        listRequest.query = e.target.value;
     }
     select(e){
         let {listRequest,defaultSelect} = this.state;
@@ -215,7 +228,7 @@ export default class List extends React.Component{
                         </RUI.Button>
                     </div>
                     <div className="search-div">
-                        <RUI.Input   onChange = {this.inputChange} placeholder = "请输入订单号或公司名称"/>
+                        <RUI.Input   onChange = {this.inputChange} className = "w-200" placeholder = "请输入订单号或公司名称"/>
                         <label className="m-l-r-10">订单状态：</label>
                         <RUI.Select  data = {orderStatus}
                                      className = "w-90 rui-theme-1 "

@@ -54,13 +54,13 @@ export default class Detail extends React.Component{
         }
     }
     reset(){
-        let account = this.props.location.query.account || "";
+        let {detail} = this.state;
         RUI.DialogManager.confirm({
             message:"您确定要重置密码吗？",
             title:"重置密码",
             submit(){
-                reset({account}).then((data)=>{
-                    Pubsub.publish("showMsg",["success","重置密码成功"])
+                reset({account:detail.account}).then((data)=>{
+                    Pubsub.publish("showMsg",["success","重置密码成功，新密码为654321"])
                 });
             }
         });

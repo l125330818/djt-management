@@ -31,6 +31,7 @@ import {
 ReactDOM.render((
     <Router history={hashHistory}>
         <Route  path='/' component={Login}/>
+        <Route  path='login' component={Login}/>
         <Route  path = "orderList" getComponent={orderList}/>
         <Route  path = "orderDetail" getComponent={orderDetail}/>
         <Route  path = "commodityList" getComponent={commodityList}/>

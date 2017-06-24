@@ -6,6 +6,7 @@ import "../../../css/page/order.scss";
 import Pager from "../../component/pager";
 import {hashHistory} from "react-router";
 import LabelInput from "../../component/label-input";
+import Pubsub from "../../util/pubsub";
 const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,9}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
 import {customerList,getMoneySetting} from "../ajax/customerAjax";
 export default class List extends React.Component{
@@ -27,7 +28,8 @@ export default class List extends React.Component{
                 selectType:1,
                 pageSize:10,
                 keyword:"level",
-                seq:"desc"
+                seq:"desc",
+                warn:""
             },
             list:[],
             defaultSelect:{key:"正常",value:1},
@@ -49,7 +51,20 @@ export default class List extends React.Component{
         this.level = localStorage.level;
     }
     componentDidMount(){
+        document.addEventListener("keyup",this.enterKey.bind(this));
         this.getList();
+    }
+    enterKey(e){
+        if(e.keyCode == 13){
+            let {listRequest} = this.state;
+            listRequest.pageNum=1
+            this.setState({},()=>{
+                this.getList();
+            });
+        }
+    }
+    componentWillUnmount(){
+        document.removeEventListener("keyup",this.enterKey.bind(this));
     }
     getList(pageNo=1){
         let _this = this;
@@ -136,7 +151,11 @@ export default class List extends React.Component{
     select(e){
         let {listRequest,defaultSelect} = this.state;
         defaultSelect = e;
-        listRequest.selectType = e.value;
+        listRequest.warn = e.value;
+        listRequest.pageNum = 1;
+        this.setState({},()=>{
+            this.getList();
+        });
         console.log(listRequest)
     }
     balanceInput(e){
@@ -151,12 +170,33 @@ export default class List extends React.Component{
             }
         });
         if(!arr.length){
-            RUI.DialogManager.alert("请选择");
+            RUI.DialogManager.alert("请选择需要导出的客户");
             return;
         }
     }
     checkDetail(clientId){
         hashHistory.push(`customerDetail?clientId=${clientId}`);
+    }
+    modifyStatus(item){
+        let _this = this;
+        let request = {
+            clientId:item.clientId,
+            status : item.status==0?1:0
+        };
+        $.ajax({
+            url:commonUrl+"/djt/web/clientmang/forbid.do",
+            type:"post",
+            dataType:"json",
+            data:request,
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success","操作成功"]);
+                    _this.getList();
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
+            }
+        });
     }
     render(){
         let {pager,customerSort,list,checkedAll,listRequest,defaultSelect,balance,levelSort,moneySort} =this.state;
@@ -169,7 +209,7 @@ export default class List extends React.Component{
                                    onChange = {this.inputChange}
                                    placeholder = "请输入要查询的姓名、公司名称、账号、地区"/>
                         <label className="m-l-r-10">余额情况：</label>
-                        <RUI.Select  data = {[{key:"正常",value:1},{key:"异常",value:2}]}
+                        <RUI.Select  data = {[{key:"正常",value:0},{key:"异常",value:1}]}
                                      className = "w-70 rui-theme-1 "
                                      callback = {this.select}
                                      value = {defaultSelect}/>
@@ -213,18 +253,19 @@ export default class List extends React.Component{
                             <tbody>
                             {
                                 list.map((item,index)=>{
+                                    let address = (item.sheng || "") + (item.shi || "") + (item.qu || "") + (item.addetail || "");
                                     return(
                                         <tr key = {index}>
                                             <td className="text-left p-l-15">
                                                 <RUI.Checkbox onChange = {this.check.bind(this,item,index)}
-                                                              selected = {item.checked?1:0}> {item.clientName}</RUI.Checkbox>
+                                                              selected = {item.checked?1:0}> {item.clientname}</RUI.Checkbox>
                                             </td>
                                             <td>{item.name}</td>
                                             <td>{item.account}</td>
-                                            <td>{item.area}</td>
+                                            <td>{address}</td>
                                             <td>{item.level}</td>
                                             <td>{item.money}</td>
-                                            <td>{item.money}</td>
+                                            <td>{item.warn}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.clientId)}>查看&nbsp;</a>
                                                 {
@@ -237,7 +278,7 @@ export default class List extends React.Component{
                                                 }
                                                 {
                                                     level != 4 &&
-                                                    <a href="javascript:;">| &nbsp;禁用</a>
+                                                    <a href="javascript:;" onClick = {this.modifyStatus.bind(this,item)}>| &nbsp;{item.status==1?"禁用":"启用"}</a>
                                                 }
                                             </td>
                                         </tr>
@@ -250,19 +291,7 @@ export default class List extends React.Component{
                         {
                             list.length==0 && <div className="no-data">暂时没有数据哦</div>
                         }
-                        <RUI.Dialog ref="dialog" title={"余额设置"} draggable={false} buttons="submit,cancel"
-                                    onSubmit={this.dialogSubmit}>
-                            <div style={{width:'400px', wordWrap:'break-word',maxHeight:500}}>
-                                <LabelInput onChange = {this.balanceInput}
-                                            value = {balance}
-                                            reg = {moneyReg}
-                                            require = {true}
-                                            placeholder = "余额预警"
-                                            maxLength = {11}
-                                            label = "余额预警："/>
 
-                            </div>
-                        </RUI.Dialog>
                         <Pager onPage ={this.goPage} {...pager}/>
                     </div>
                 </Layout>

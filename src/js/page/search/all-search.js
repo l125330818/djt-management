@@ -55,8 +55,25 @@ export default class List extends React.Component{
         this.goPage = this.goPage.bind(this);
       }
     componentDidMount(){
+        document.addEventListener("keyup",this.enterKey.bind(this));
         this.getGoodsList();
         // this.getBalanceList();
+    }
+    enterKey(e){
+        if(e.keyCode == 13){
+            let {listRequest,selectType} = this.state;
+            listRequest.pageNum=1
+            this.setState({},()=>{
+                if(selectType == 1){
+                    this.getGoodsList();
+                }else{
+                    this.getBalanceList();
+                }
+            });
+        }
+    }
+    componentWillUnmount(){
+        document.removeEventListener("keyup",this.enterKey.bind(this));
     }
     getGoodsList(pageNo=1){
         let _this = this;

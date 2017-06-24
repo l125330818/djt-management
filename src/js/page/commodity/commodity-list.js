@@ -58,7 +58,20 @@ export default class List extends React.Component{
         this.addStorageSubmit = this.addStorageSubmit.bind(this);
     }
     componentDidMount(){
+        document.addEventListener("keyup",this.enterKey.bind(this));
         this.getList();
+    }
+    enterKey(e){
+        if(e.keyCode == 13){
+            let {listRequest} = this.state;
+            listRequest.pageNum=1
+            this.setState({},()=>{
+                this.getList();
+            });
+        }
+    }
+    componentWillUnmount(){
+        document.removeEventListener("keyup",this.enterKey.bind(this));
     }
     getList(pageNo=1){
         let _this = this;
@@ -95,10 +108,10 @@ export default class List extends React.Component{
         });
     }
     modify(item){
-        hashHistory.push(`addCommodity?type=edit&goodsId=${item.goodsId}`)
+        hashHistory.push(`addCommodity?type=edit&goodsId=${item.goodsid}`)
     }
     checkDetail(item){
-        hashHistory.push(`addCommodity?type=check&goodsId=${item.goodsId}`)
+        hashHistory.push(`addCommodity?type=check&goodsId=${item.goodsid}`)
     }
     inputChange(type,e){
         let {listRequest} = this.state;
@@ -149,7 +162,7 @@ export default class List extends React.Component{
         let arr = [];
         list.map((item)=>{
             if(item.checked){
-                arr.push(item.goodsId);
+                arr.push(item.goodsid);
             }
         });
         if(!arr.length){
@@ -160,7 +173,7 @@ export default class List extends React.Component{
     }
     delete(item){
         let arr = [];
-        arr.push(item.goodsId);
+        arr.push(item.goodsid);
         this.deleteAjax(arr);
     }
     deleteAjax(id){
@@ -213,7 +226,7 @@ export default class List extends React.Component{
         let arr = [];
         list.map((item)=>{
             if(item.checked){
-                arr.push(item.goodsId);
+                arr.push(item.goodsid);
             }
         });
         if(!arr.length){
@@ -224,7 +237,7 @@ export default class List extends React.Component{
     }
     ground(item){
         let arr = [];
-        arr.push(item.goodsId);
+        arr.push(item.goodsid);
         let status = item.status==0?1:0;
         this.groundAjax(arr,status);
     }
@@ -244,7 +257,7 @@ export default class List extends React.Component{
         }else{
             storageType = 2;
         }
-        this.setState({goodsId:item.goodsId,storageType},()=>{
+        this.setState({goodsId:item.goodsid,storageType},()=>{
             this.refs.addStorageDialog.show();
         });
     }

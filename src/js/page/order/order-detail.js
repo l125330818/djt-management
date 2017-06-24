@@ -257,7 +257,7 @@ export default class Detail extends React.Component{
                     </table>
                     <div>
                         {
-                            (level == 5 && type!=-1) && status == 3 &&
+                            ((level == 5 || level == 1 )&& type!=-1) && status == 3 &&
                             <LabelInput onChange = {this.changeInput.bind(this,"realMoney")}
                                         require = {true}
                                         value = {detail.realMoney}
@@ -278,19 +278,19 @@ export default class Detail extends React.Component{
                     <div className="left">
                         <RUI.Button href="javascript:window.history.go(-1)">返回</RUI.Button>
                         {
-                            (level == 2 || level == 3 ) && status == 1 &&
+                            (level == 2 || level == 3 || level == 1) && status == 1 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
                                         onClick={this.handleOrder.bind(this,1)}>受理</RUI.Button>
                         }
                         {
-                            (level == 4) && status == 2 &&
+                            (level == 4 || level == 1) && status == 2 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
                                         onClick={this.handleOrder.bind(this,2)}>{type==1?"发货":"退货"}</RUI.Button>
                         }
                         {
-                            (level == 5) && status == 3 &&
+                            (level == 5 || level == 1) && status == 3 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
                                         onClick={this.handleOrder.bind(this,3)}>审核</RUI.Button>

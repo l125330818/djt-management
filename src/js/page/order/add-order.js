@@ -7,8 +7,8 @@ import "../../../css/page/order.scss";
 import LimitInput from "../../component/limitInput";
 import {orderDetail,getOrderNo} from "../ajax/orderAjax";
 import {hashHistory} from "react-router";
-import {customerList} from "../ajax/customerAjax";
 import {commodityList,getCompany} from "../ajax/commodityAjax";
+import Pubsub from "../../util/pubsub";
 let qqReg = /^\d+$/;
 let accountReg = /^[0-9a-zA-Z]+$/g;
 export default class List extends React.Component{
@@ -90,6 +90,9 @@ export default class List extends React.Component{
         }
         this.getOrderNo();
     }
+    componentWillUnmount(){
+        this.timer && clearTimeout(this.timer);
+    }
     getOrderNo(){
         getOrderNo().then((data)=>{
             let {addRequest} = this.state;
@@ -113,7 +116,6 @@ export default class List extends React.Component{
         list.map((item)=>{
             totalPrice += item.price * item.count;
         });
-        console.log(totalPrice.toFixed(2))
         this.setState({totalPrice:totalPrice.toFixed(2)});
     }
     inputChange(item,type,e){
@@ -130,7 +132,7 @@ export default class List extends React.Component{
         if(type == "goodsSelect"){
             list.push(Object.assign(e.detail,{count:1}));
         }else{
-            addRequest.addRequest = e.value;
+            addRequest.clientId = e.value;
         }
         let jsonStr = JSON.stringify(list);
         let arr = JSON.parse(jsonStr);
@@ -177,6 +179,18 @@ export default class List extends React.Component{
     }
     saveData(){
         let {list,addRequest} = this.state;
+        let msg = "";
+        if(!addRequest.clientId){
+            msg = "请选择公司";
+        }else if(!list.length){
+            msg = "请选择商品"
+        }else{
+            msg = "";
+        }
+        if(msg){
+            Pubsub.publish("showMsg",["wrong",msg]);
+            return;
+        }
         let arr = [];
         list.map((item)=>{
             arr.push({id:item.goodsid,num:item.count});
@@ -187,11 +201,17 @@ export default class List extends React.Component{
             type:"post",
             dataType:"json",
             data:addRequest,
-            success(){
-
+            success(data){
+                if(data.status == "0000"){
+                    Pubsub.publish("showMsg",["success","操作成功"]);
+                    this.timer = setTimeout(()=>{
+                        hashHistory.push("orderList");
+                    },1000)
+                }else{
+                    Pubsub.publish("showMsg",["wrong",data.msg]);
+                }
             }
         })
-console.log(addRequest,arr)
     }
     render(){
         let {list,goodsList,goodsSelect,defaultSelect,companyList,companySelect,orderNo,totalPrice,addRequest} =this.state;
@@ -219,13 +239,14 @@ console.log(addRequest,arr)
                             stuff={true}
                             filterCallback={this.filterHandle.bind(this,"goods")}>
                         </RUI.Select>
-                        <label  className="m-l-20">时间：</label>
-                        <LimitInput   value = {new Date().Format("yyyy-MM-dd hh : mm : ss")}
-                                      require = {true}
-                                      disable = {true}
-                         />
+                        {/*<label  className="m-l-20">时间：</label>*/}
+                        {/*<LimitInput   value = {new Date().Format("yyyy-MM-dd hh : mm : ss")}*/}
+                                      {/*require = {true}*/}
+                                      {/*disable = {true}*/}
+                         {/*/>*/}
                         <label  className="m-l-20">订单号：</label>
                         <RUI.Input   value = {addRequest.orderNo}
+                                     className = "w-168"
                                       onChange = {this.orderNoChange.bind(this,"orderNo")} />
                     </div>
                     <div className="total-div">

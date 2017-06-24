@@ -38,7 +38,20 @@ export default class List extends React.Component{
         this.goPage = this.goPage.bind(this);
     }
     componentDidMount(){
+        document.addEventListener("keyup",this.enterKey.bind(this));
         this.getList();
+    }
+    enterKey(e){
+        if(e.keyCode == 13){
+            let {listRequest} = this.state;
+            listRequest.pageNum=1
+            this.setState({},()=>{
+                this.getList();
+            });
+        }
+    }
+    componentWillUnmount(){
+        document.removeEventListener("keyup",this.enterKey.bind(this));
     }
     getList(pageNo=1){
         let {pager} = this.state;

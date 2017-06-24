@@ -162,11 +162,17 @@ export default class Add extends React.Component{
         if(!this.checkValid()){
             return;
         }
+        let _this = this;
         request.sheng = province;
         request.shi = city;
         request.qu = county;
+        let url = "/djt/web/clientmang/addclient.do";
+        if(this.clientId){
+            url = "/djt/web/clientmang/update.do";
+            request.clientId = this.clientId;
+        }
         $.ajax({
-            url:commonUrl + "/djt/web/clientmang/addclient.do",
+            url:commonUrl + url,
             data:request,
             type:"post",
             dataType:"json",
@@ -175,7 +181,7 @@ export default class Add extends React.Component{
                     setTimeout(()=>{
                         hashHistory.push("customerList");
                     },1000);
-                    Pubsub.publish("showMsg",["success","新增成功"]);
+                    Pubsub.publish("showMsg",["success",_this.clientId?"修改成功":"新增成功"]);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -219,8 +225,8 @@ export default class Add extends React.Component{
         }else if(!request.password){
             msg = "请输入密码";
             flag = false;
-        }else if(!request.remark){
-            msg = "请输入备注";
+        }else if((request.password != request.newPassword && !this.clientId)){
+            msg = "2次输入密码不相同，请重新输入";
             flag = false;
         }else{
             msg = "";
@@ -239,15 +245,13 @@ export default class Add extends React.Component{
                 <LabelInput onChange = {this.changeInput.bind(this,"clientname")}
                             require = {true}
                             value = {request.clientname}
-                            maxLength = {10}
                             disable = {!!clientId}
-                            placeholder = "2~10个字符"
+                            placeholder = "公司名称"
                             label = "公司名称："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"name")}
                             require = {true}
                             value = {request.name}
-                            maxLength = {10}
-                            placeholder = "2~10个字符"
+                            placeholder = "姓名"
                             label = "姓名："/>
 
                 <LabelSelect require = {true}
@@ -342,7 +346,7 @@ export default class Add extends React.Component{
 
                 {
                     !clientId &&
-                    <LabelInput onChange = {this.changeInput.bind(this,"password")}
+                    <LabelInput onChange = {this.changeInput.bind(this,"newPassword")}
                                 require = {true}
                                 type = "password"
                                 maxLength = {20}
@@ -350,7 +354,6 @@ export default class Add extends React.Component{
                                 label = "确认密码："/>
                 }
                 <LabelInput onChange = {this.changeInput.bind(this,"remark")}
-                            require = {true}
                             placeholder = "请输入备注"
                             value = {request.remark}
                             label = "备注："/>

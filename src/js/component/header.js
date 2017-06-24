@@ -5,6 +5,7 @@ import  Breadcrumb  from 'antd/lib/Breadcrumb';
 import LabelInput from "./label-input";
 import 'antd/lib/Breadcrumb/style/css';
 import Pubsub from "../util/pubsub";
+import {hashHistory} from "react-router";
 let week = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日",]
 export default class Header extends React.Component{
     constructor(props){
@@ -37,7 +38,7 @@ export default class Header extends React.Component{
         this.timer && clearInterval(this.timer);
     }
     loginOut(){
-
+        hashHistory.push("/login");
     }
     modifyPwd(){
         this.refs.headerDialog.show();
@@ -53,7 +54,10 @@ export default class Header extends React.Component{
             msg = "请输入新密码";
         }else if(request.newpwd.length<6){
             msg = "密码格式为6~20位数字或字母";
-        }else{
+        }else if(request.newpwd != request.confirmPwd){
+            msg = "2次输入密码不相同，请重新输入";
+        }
+        else{
             msg = "";
         }
         if(msg){
@@ -68,6 +72,9 @@ export default class Header extends React.Component{
             success(data){
                 if(data.status == "0000"){
                     Pubsub.publish("showMsg",["success","修改成功"]);
+                    this.timer = this.setTimeout(()=>{
+                        hashHistory.push("/login");
+                    },1000);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -127,6 +134,12 @@ export default class Header extends React.Component{
                                     maxLength = {20}
                                     placeholder = "6~20位数字或字母"
                                     label = "新密码："/>
+                        <LabelInput onChange = {this.changeInput.bind(this,"confirmPwd")}
+                                    require = {true}
+                                    type = "password"
+                                    maxLength = {20}
+                                    placeholder = "6~20位数字或字母"
+                                    label = "确认密码："/>
 
                     </div>
                 </RUI.Dialog>
