@@ -117,8 +117,8 @@ export default class Attr extends React.Component{
             data:request,
             success(data){
                 if(data.status == "0000"){
-                    _this.getList();
                     Pubsub.publish("showMsg",["success","操作成功"]);
+                    _this.getList();
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -146,9 +146,8 @@ export default class Attr extends React.Component{
                     data:request,
                     success(data){
                         if(data.status == "0000"){
-                            _this.getList();
                             Pubsub.publish("showMsg",["success","删除成功"]);
-
+                            _this.getList();
                         }else{
                             Pubsub.publish("showMsg",["wrong",data.msg]);
                         }
@@ -168,24 +167,26 @@ export default class Attr extends React.Component{
         });
     }
     setDialogSubmit(){
+        let _this = this;
         let {warn,brand} = this.state;
         let request = {companyname:localStorage.companyName,brand,warn};
         setWarn(request).then((data)=>{
             if(data.status == "0000"){
                 Pubsub.publish("showMsg",["success","设置成功"]);
+                _this.getList();
             }else{
                 Pubsub.publish("showMsg",["wrong",data.msg]);
             }
         })
     }
     warnInput(e){
-        this.state.warn = e.target.value;
+        this.setState({warn:e.target.value});
     }
     render(){
         let {pager,brandList,addType,imgloc,brand,file,dialogInput,warn} = this.state;
         return(
             <div>
-                <Layout mark = "sp" bread = {["商品管理","商品属性"]}>
+                <Layout mark = "sp" bread = {["商品管理","商品品牌"]}>
                     <div className="search-div clearfix">
                         <div className="right">
                             <RUI.Button onClick = {this.addBrand} className = "primary">新增品牌</RUI.Button>
@@ -196,18 +197,21 @@ export default class Attr extends React.Component{
                         <table className="table">
                             <thead>
                             <tr>
-                                <td className="col-30">品牌</td>
-                                <td className="col-30">图片</td>
+                                <td className="col-25">品牌</td>
+                                <td className="col-25">图片</td>
+                                <td className="col-25">余额预警</td>
                                 <td>操作</td>
                             </tr>
                             </thead>
                             <tbody>
                             {
                                 brandList.length>0 && brandList.map((item,i)=>{
+                                    let warn = item.warn || 0;
                                     return (
                                         <tr key = {i}>
                                             <td>{item.brand}</td>
                                             <td className="p-t-b-20"><img className="brand-img" src={item.imgloc} alt=""/></td>
+                                            <td className="p-t-b-20">{warn || "未设置"}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkSeries.bind(this,item)}>查看&nbsp;|</a>
                                                 <a href="javascript:;" onClick = {this.addSeries.bind(this,item)}>&nbsp;新增系列&nbsp;|</a>
@@ -262,6 +266,7 @@ export default class Attr extends React.Component{
                                 <LabelInput onChange = {this.warnInput}
                                             value = {warn}
                                             require = {true}
+                                            reg = {moneyReg}
                                             placeholder = "余额预警"
                                             maxLength = {11}
                                             label = "余额预警："/>

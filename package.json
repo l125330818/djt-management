@@ -4,7 +4,7 @@
   "description": "webpack app description",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "product": "webpack --config webpack.product.js",
     "dev": "webpack-dev-server --devtool eval --progress --colors --hot --content-base --watch",
     "build": "webpack -p"
   },

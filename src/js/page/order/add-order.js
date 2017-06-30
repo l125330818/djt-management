@@ -7,7 +7,7 @@ import "../../../css/page/order.scss";
 import LimitInput from "../../component/limitInput";
 import {orderDetail,getOrderNo} from "../ajax/orderAjax";
 import {hashHistory} from "react-router";
-import {commodityList,getCompany} from "../ajax/commodityAjax";
+import {upCommodityList,getCompany} from "../ajax/commodityAjax";
 import Pubsub from "../../util/pubsub";
 let qqReg = /^\d+$/;
 let accountReg = /^[0-9a-zA-Z]+$/g;
@@ -62,7 +62,7 @@ export default class List extends React.Component{
                 companyName:localStorage.companyName || "",
                 orderNo:"DH13213123",
                 goodsInfo:[],
-                remark:"备注一下",
+                remark:"",
                 clientId:"",
                 type:this.props.location.query.type,
             },
@@ -76,6 +76,7 @@ export default class List extends React.Component{
             companyShow:false,
             checkedAll:false,
             orderNo:"",
+            totalPrice:0
         };
         this.selectCompany = this.selectCompany.bind(this);
         this.orderNoChange = this.orderNoChange.bind(this);
@@ -102,9 +103,12 @@ export default class List extends React.Component{
     }
     getDetail(){
         let request = {orderNo:this.orderNo};
+        let {addRequest} = this.state;
         orderDetail(request).then((data)=>{
+            addRequest.clientId = data.clientId;
             this.setState({
                 list:data.dataList,
+                companySelect:{key:data.clientName,value:data.clientId}
             },()=>{
                 this.getTotalPrice();
             });
@@ -155,7 +159,7 @@ export default class List extends React.Component{
             })
         }else if(type == "goods"){
             goodsRequest.goodsName = e;
-            commodityList(goodsRequest).then((data)=>{
+            upCommodityList(goodsRequest).then((data)=>{
                 let dataList = data.dataList;
                 let goodsList = [];
                 dataList.map((item)=>{
@@ -224,7 +228,7 @@ export default class List extends React.Component{
                             data={companyList}
                             value={companySelect}
                             filter={true}
-                            className="rui-theme-1 w-200"
+                            className="rui-theme-1 min-w-260"
                             callback = {this.selectCompany.bind(this,"companySelect")}
                             stuff={true}
                             filterCallback={this.filterHandle.bind(this,"company")}>
@@ -234,7 +238,8 @@ export default class List extends React.Component{
                             data={goodsList}
                             value={goodsSelect}
                             filter={true}
-                            className="rui-theme-1 w-200"
+                            className="rui-theme-1 min-w-260"
+                            inputValue = "222"
                             callback = {this.selectCompany.bind(this,"goodsSelect")}
                             stuff={true}
                             filterCallback={this.filterHandle.bind(this,"goods")}>

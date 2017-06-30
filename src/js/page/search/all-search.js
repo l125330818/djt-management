@@ -32,9 +32,9 @@ export default class List extends React.Component{
                 pageSize:10
             },
             selectValue:[
-                {key:"品牌跟踪",value:"1"},{key:"余额跟踪",value:2},
+
             ],
-            defaultSelect:{key:"品牌跟踪",value:""},
+            defaultSelect:{key:"商品跟踪",value:""},
             list:[],
             ids:[],
             checkedAll:false,
@@ -53,10 +53,19 @@ export default class List extends React.Component{
         this.addOrder = this.addOrder.bind(this);
         this.datePickerChange = this.datePickerChange.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.export = this.export.bind(this);
       }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
         this.getGoodsList();
+        let level = localStorage.level;
+        let selectValue = [];
+        if(level !=2 && level != 4){ //客服和库管没有余额查询
+            selectValue = [{key:"商品跟踪",value:"1"},{key:"余额跟踪",value:2}]
+        }else{
+            selectValue = [{key:"商品跟踪",value:"1"}]
+        }
+        this.setState({selectValue});
         // this.getBalanceList();
     }
     enterKey(e){
@@ -115,13 +124,27 @@ export default class List extends React.Component{
     queryDetail(){
         hashHistory.push("orderDetail");
     }
-    check(item,e){
+    export(){
+        let {list} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.id);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择需要导出的列表");
+            return;
+        }
+        window.open(commonUrl + "/djt/web/export/traceexp.do?id="+JSON.stringify(arr))
+    }
+    check(item,index,e){
         let {list,checkedAll} = this.state;
         let temp = 0;
         if(e.data.selected ==1){
-            item.checked = true;
+            list[index].checked = true;
         }else{
-            item.checked = false;
+            list[index].checked = false;
         }
         list.map((list)=>{
             if(list.checked){
@@ -171,7 +194,7 @@ export default class List extends React.Component{
         let {defaultSelect,listRequest} = this.state;
         defaultSelect = e;
         listRequest.pageNum = 1;
-        this.setState({selectType:e.value},()=>{
+        this.setState({selectType:e.value,checkedAll:false},()=>{
             if(e.value == 1){
                 this.getGoodsList();
             }else{
@@ -236,13 +259,16 @@ export default class List extends React.Component{
                                 <label className="m-l-r-10 line-32">
                                     合计上账金额：
                                     <span className="require">{sumUpmoney}</span>
-                                    合计金额：
+                                    合计余额：
                                     <span className="require">{sumBalance}</span>
                                 </label>
 
                         }
                         <div className="right">
-                            <RUI.Button onClick = {this.export}>导出</RUI.Button>
+                            {
+                                selectType==1 &&
+                                <RUI.Button onClick = {this.export}>导出</RUI.Button>
+                            }
                         </div>
                     </div>
                     {
@@ -269,7 +295,7 @@ export default class List extends React.Component{
                             {
                                 selectType == 1?
                                     <tr>
-                                        <td className="col-15">
+                                        <td className="col-15 text-left p-l-15 ">
                                             <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>商品名称</RUI.Checkbox>
                                         </td>
                                         <td className="col-10">品牌</td>
@@ -283,8 +309,8 @@ export default class List extends React.Component{
                                     </tr>
                                     :
                                     <tr>
-                                        <td className="col-15">
-                                            <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>品牌</RUI.Checkbox>
+                                        <td className="col-15 text-left p-l-15 ">
+                                            品牌
                                         </td>
                                         <td className="col-10">上账金额</td>
                                         <td className="col-10">金额</td>
@@ -298,9 +324,9 @@ export default class List extends React.Component{
                                     return(
                                         selectType==1?
                                             <tr key = {index}>
-                                                <td>
+                                                <td className="text-left p-l-15 ">
                                                     <RUI.Checkbox
-                                                        onChange = {this.check.bind(this,item)}
+                                                        onChange = {this.check.bind(this,item,index)}
                                                         selected = {item.checked?1:0}> {item.goodsname}</RUI.Checkbox>
                                                 </td>
                                                 <td>{item.brand}</td>
@@ -309,16 +335,14 @@ export default class List extends React.Component{
                                                 <td>{item.unit}</td>
                                                 <td>{item.price}</td>
                                                 <td>{`${item.count}`}</td>
-                                                <td>{item.clientName || "无"}</td>
+                                                <td>{item.clientname || "无"}</td>
                                                 <td>
                                                     {item.ordertime}
                                                 </td>
                                             </tr>
                                             :<tr key = {index}>
-                                            <td>
-                                                <RUI.Checkbox
-                                                    onChange = {this.check.bind(this,item)}
-                                                    selected = {item.checked?1:0}> {item.brand}</RUI.Checkbox>
+                                            <td >
+                                                {item.brand}
                                             </td>
                                             <td>{item.upmoney}</td>
                                             <td>{item.money}</td>

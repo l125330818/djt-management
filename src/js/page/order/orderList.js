@@ -56,7 +56,9 @@ export default class List extends React.Component{
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
         this.getList();
-        this.getUnread();
+        setTimeout(()=>{
+            this.getUnread();
+        },10)
     }
     enterKey(e){
         if(e.keyCode == 13){
@@ -194,7 +196,7 @@ export default class List extends React.Component{
             RUI.DialogManager.alert("请选择需要导出的订单");
             return;
         }
-        window.open(commonUrl + "/djt//web/export/orderexp.do?orderNo="+JSON.stringify(arr))
+        window.open(commonUrl + "/djt/web/export/orderexp.do?orderNo="+JSON.stringify(arr))
         // $.ajax({
         //     url:commonUrl + "/djt//web/export/orderexp.do",
         //     type:"post",
@@ -263,7 +265,7 @@ export default class List extends React.Component{
                                     let styleStr = "";
                                     if(item.status == 0){
                                         styleStr = "font-color-red";
-                                    }else if(item.warn == 1){
+                                    }else if(item.warn == 1 && item.status !=4){
                                         styleStr = "font-color-yellow"
                                     }
                                     return(
@@ -276,7 +278,13 @@ export default class List extends React.Component{
                                                               selected = {item.checked?1:0}> {item.orderno}</RUI.Checkbox>
                                             </td>
                                             <td>{item.clientname}</td>
-                                            <td>{item.money}</td>
+                                            <td>
+                                                <p>订单金额：{item.money}</p>
+                                                {
+                                                    item.status == 4 &&
+                                                    <p>实付金额：{item.realmoney}</p>
+                                                }
+                                            </td>
                                             <td>{item.ordertime}</td>
                                             <td>{this.getState(item.status)}</td>
                                             <td>{item.remark || "无"}</td>

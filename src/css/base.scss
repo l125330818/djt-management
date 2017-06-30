@@ -176,3 +176,12 @@ input[disabled]{
   color:#fff;
   font-size: 16px;
 }
+.rui-select-options{
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.goods-select{
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}

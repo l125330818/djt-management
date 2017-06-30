@@ -14,6 +14,10 @@
   .col-30{
     width:30%
   }
+
+}
+.col-25{
+  width:25%
 }
 .empty{
   height: 10px;
@@ -172,4 +176,11 @@
 .total-div{
   padding-left: 20px;
   padding-bottom: 10px;
+}
+.line-40{
+  line-height: 40px;
+  font-size: 16px;
+}
+.min-w-260{
+  min-width: 260px !important;
 }

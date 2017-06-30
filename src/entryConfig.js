@@ -16,81 +16,81 @@
 export const orderList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/order/orderList').default)
-    })
+    },"orderList")
 };
 export const orderDetail = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/order/order-detail').default)
-    })
+    },"orderDetail")
 };
 export const commodityList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/commodity/commodity-list').default)
-    })
+    },"commodityList")
 };
 export const addCommodity = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/commodity/add-commodity').default)
-    })
+    },"addCommodity")
 };
 export const customerList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/customer/customer-list').default)
-    })
+    },"customerList")
 };
 export const recharge = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/customer/recharge').default)
-    })
+    },"recharge")
 };
 export const addCustomer = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/customer/add-customer').default)
-    })
+    },"addCustomer")
 };
 export const noticeList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/notice/notice-list').default)
-    })
+    },"noticeList")
 };
 export const addNotice = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/notice/add-notice').default)
-    })
+    },"addNotice")
 };
 export const rechargeList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/customer/recharge-list').default)
-    })
+    },"rechargeList")
 };
 export const addOrder = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/order/add-order').default)
-    })
+    },"addOrder")
 };
 export const allSearchList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/search/all-search').default)
-    })
+    },"allSearchList")
 };
 export const customerDetail = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/customer/customer-detail').default)
-    })
+    },"customerDetail")
 };
 export const commodityAttr = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/commodity/commodity-attr').default)
-    })
+    },"commodityAttr")
 };
 export const seriesList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/commodity/commodity-series').default)
-    })
+    },"seriesList")
 };
 export const storageList = (location, callback) => {
     require.ensure([], require => {
         callback(null, require('./js/page/commodity/storage-list').default)
-    })
+    },"storageList")
 };
 

@@ -36,6 +36,8 @@ export default class List extends React.Component{
         this.search = this.search.bind(this);
         this.inputChange = this.inputChange.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.batchExport = this.batchExport.bind(this);
+        this.check = this.check.bind(this);
     }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
@@ -83,13 +85,27 @@ export default class List extends React.Component{
             this.getList();
         });
     }
-    check(item,e){
+    batchExport(){
+        let {list} = this.state;
+        let arr = [];
+        list.map((item)=>{
+            if(item.checked){
+                arr.push(item.id);
+            }
+        });
+        if(!arr.length){
+            RUI.DialogManager.alert("请选择需要导出的列表");
+            return;
+        }
+        window.open(commonUrl + "/djt/web/export/rechargexp.do?id="+JSON.stringify(arr))
+    }
+    check(item,index,e){
         let {list,checkedAll} = this.state;
         let temp = 0;
         if(e.data.selected ==1){
-            item.checked = true;
+            list[index].checked = true;
         }else{
-            item.checked = false;
+            list[index].checked = false;
         }
         list.map((list)=>{
             if(list.checked){
@@ -126,19 +142,25 @@ export default class List extends React.Component{
         listRequest.query = e.target.value;
     }
     render(){
-        let {pager,sortState,list} =this.state;
+        let {pager,sortState,list,checkedAll} =this.state;
         return(
             <div>
                 <Layout mark = "cz" bread = {["充值记录","充值列表"]}>
                     <div className="search-div">
                         <RUI.Input   onChange = {this.inputChange} className = "w-280" placeholder = "请输入公司名称或用户名或充值品牌"/>
                         <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
+                        <div className="right">
+                            <RUI.Button onClick = {this.batchExport}>批量导出</RUI.Button>
+                        </div>
                     </div>
                     <div className="order-content">
                         <table className="table">
                             <thead>
                             <tr>
-                                <td className="col-15">充值公司</td>
+                                <td className="col-15">
+                                    <RUI.Checkbox selected = {checkedAll?1:0} onChange = {this.checkAll}>充值公司</RUI.Checkbox>
+                                </td>
+
                                 <td className="col-15">充值用户</td>
                                 <td className="col-15">充值品牌</td>
                                 <td className="col-10">充值金额</td>
@@ -158,7 +180,10 @@ export default class List extends React.Component{
                                 list.length>0 && list.map((item,i)=>{
                                     return(
                                         <tr key = {i} className={item.chargetype==1?"":"font-color-red"}>
-                                            <td>{item.clientname}</td>
+                                            <td className="text-left p-l-15">
+                                                <RUI.Checkbox onChange = {this.check.bind(this,item,i)}
+                                                              selected = {item.checked?1:0}> {item.clientname}</RUI.Checkbox>
+                                            </td>
                                             <td>{item.name}</td>
                                             <td>{item.brand}</td>
                                             <td>{item.money}</td>

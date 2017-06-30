@@ -16,7 +16,8 @@ export default class Detail extends React.Component{
         super(props);
         this.state = {
             detail:{
-                goods_list:[]
+                dataList:[],
+                express:{}
             },
             dispatchGoods:{
                 senddate:moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
@@ -24,7 +25,7 @@ export default class Detail extends React.Component{
                 expressno:"",
                 remark:"",
                 orderno:this.props.location.query.orderNo,
-                companyname:localStorage.level
+                companyname:localStorage.companyName
             },
             orderDetail:{
                 orderno:"",
@@ -43,6 +44,7 @@ export default class Detail extends React.Component{
         this.level = localStorage.level;
         this.dialogSubmit = this.dialogSubmit.bind(this);
         this.voidDialogSubmit = this.voidDialogSubmit.bind(this);
+        this.export = this.export.bind(this);
     }
     componentDidMount(){
         this.getDetail();
@@ -150,8 +152,8 @@ export default class Detail extends React.Component{
             dataType:"json",
             success(data){
                 if(data.status == "0000"){
-                    _this.getDetail();
                     Pubsub.publish("showMsg",["success","操作成功"]);
+                    _this.getDetail();
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -166,23 +168,22 @@ export default class Detail extends React.Component{
     handleInput(type,e){
         let {dispatchGoods} = this.state;
         dispatchGoods[type] = e.target.value;
-        this.setState({});
     }
     dialogSubmit(){
         let {dispatchGoods,detail} = this.state;
         let msg = "";
         let url = "/djt/web/ordermang/handle2.do";
-        if(!dispatchGoods.expressfirm){
-            msg = "请输入物流公司";
-        }else if(!dispatchGoods.expressno){
-            msg = "请输入物流单号";
-        }else{
-            msg = "";
-        }
-        if(msg){
-            Pubsub.publish("showMsg",["wrong",msg]);
-            return false;
-        }
+        // if(!dispatchGoods.expressfirm){
+        //     msg = "请输入物流公司";
+        // }else if(!dispatchGoods.expressno){
+        //     msg = "请输入物流单号";
+        // }else{
+        //     msg = "";
+        // }
+        // if(msg){
+        //     Pubsub.publish("showMsg",["wrong",msg]);
+        //     return false;
+        // }
         let request = dispatchGoods;
         request.remark2 = detail.remark;
         this.handleAjax(url,request);
@@ -209,10 +210,14 @@ export default class Detail extends React.Component{
     }
     handleVoidInput(type,e){
         this.state[type] = e.target.value;
-        this.setState({});
+    }
+    export(){
+        let arr = [this.orderNo];
+        window.open(commonUrl + "/djt/web/export/orderexp.do?orderNo="+JSON.stringify(arr))
     }
     render(){
         let {detail,dispatchGoods,reason} = this.state;
+        let {express} = detail;
         let level = this.level;
         let type = this.type;
         let status = detail.status;
@@ -227,17 +232,34 @@ export default class Detail extends React.Component{
                         <LabelText label = "订单金额：" text = {detail.money}/>
                         <LabelText label = "订单时间：" text = {detail.orderTime}/>
                         {
+                            status == 4 &&
+                            <LabelText label = "实付金额：" text = {detail.realMoney}/>
+                        }
+                        {
                             detail.reason &&
                             <LabelText label = "作废理由：" text = {detail.reason}/>
+                        }
+                        {
+                            express && express.expressfirm &&
+                            <LabelText label = "物流公司：" text = {express.expressfirm}/>
+                        }
+                        {
+                            express && express.expressno &&
+                            <LabelText label = "物流单号：" text = {express.expressno}/>
+                        }
+                        {
+                            express && express.senddate &&
+                            <LabelText label = "发货时间：" text = {express.senddate}/>
                         }
                     </div>
                     <h3 className="detail-title">商品清单</h3>
                     <table className="table">
                         <thead>
                         <tr>
-                            <td>商品名称</td>
-                            <td>品牌</td>
-                            <td>单价</td>
+                            <td className = "col-25">商品名称</td>
+                            <td className = "col-25">品牌</td>
+                            <td className = "col-25">单价</td>
+                            <td className = "col-25">数量</td>
                         </tr>
                         </thead>
                         <tbody>
@@ -248,6 +270,7 @@ export default class Detail extends React.Component{
                                         <td>{item.goodsname}</td>
                                         <td>{item.brand}</td>
                                         <td>{item.price}</td>
+                                        <td>{item.count}</td>
                                     </tr>
                                 )
                             })
@@ -257,7 +280,7 @@ export default class Detail extends React.Component{
                     </table>
                     <div>
                         {
-                            ((level == 5 || level == 1 )&& type!=-1) && status == 3 &&
+                            ((level == 5 || level == 1  || level == 3)&& type!=-1) && status == 3 &&
                             <LabelInput onChange = {this.changeInput.bind(this,"realMoney")}
                                         require = {true}
                                         value = {detail.realMoney}
@@ -284,13 +307,13 @@ export default class Detail extends React.Component{
                                         onClick={this.handleOrder.bind(this,1)}>受理</RUI.Button>
                         }
                         {
-                            (level == 4 || level == 1) && status == 2 &&
+                            (level == 4 || level == 1 || level == 3) && status == 2 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
                                         onClick={this.handleOrder.bind(this,2)}>{type==1?"发货":"退货"}</RUI.Button>
                         }
                         {
-                            (level == 5 || level == 1) && status == 3 &&
+                            (level == 5 || level == 1 || level == 3) && status == 3 &&
                             <RUI.Button className="primary"
                                         style={{marginLeft:"10px"}}
                                         onClick={this.handleOrder.bind(this,3)}>审核</RUI.Button>
@@ -304,7 +327,7 @@ export default class Detail extends React.Component{
 
                         <RUI.Button className="primary"
                                     style={{marginLeft:"10px"}}
-                                    onClick={this.saveData}>导出</RUI.Button>
+                                    onClick={this.export}>导出</RUI.Button>
                     </div>
                 </div>
                 <RUI.Dialog ref="dialog" title={"发货"} draggable={false} buttons="submit,cancel"

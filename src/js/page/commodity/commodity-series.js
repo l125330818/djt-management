@@ -145,7 +145,7 @@ export default class Attr extends React.Component{
         console.log(file);
         return(
             <div>
-                <Layout mark = "sp" bread = {["商品管理","商品属性"]}>
+                <Layout mark = "sp" bread = {["商品管理","商品系列"]}>
                     <div className="search-div clearfix">
                         <div className="right">
                             <RUI.Button onClick = {this.addBrand} className = "primary">新增系列</RUI.Button>
@@ -183,7 +183,7 @@ export default class Attr extends React.Component{
                         {
                             brandList.length==0 && <div className="no-data">暂时没有数据哦</div>
                         }
-                        <Pager onPage ={this.goPage} {...pager}/>
+                        <Pager returnButton = {true} onPage ={this.goPage} {...pager}/>
                         <RUI.Dialog ref="dialog" title={"新增系列"}
                                     draggable={false}
                                     buttons="submit,cancel"

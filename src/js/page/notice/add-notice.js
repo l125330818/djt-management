@@ -13,7 +13,7 @@ import Pubsub from "../../util/pubsub";
 import {hashHistory} from "react-router";
 import {noticeDetail} from "../ajax/noticeAjax";
 
-import {commodityList} from "../ajax/commodityAjax";
+import {upCommodityList} from "../ajax/commodityAjax";
 
 export default class Add extends React.Component{
     // 构造
@@ -57,9 +57,9 @@ export default class Add extends React.Component{
             brand:"",
             series:"",
             classify:"",
-            relationname:"",
-            stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
-            endate : moment(new Date()).format("YYYY-MM-DD"),
+            goodsName:"",
+            stdate : "",
+            endate : "",
             keyword:"",
             pageNum:1,
             pageSize:10000,
@@ -130,7 +130,7 @@ export default class Add extends React.Component{
             msg = "请输入通知主题";
         }else if(!request.content){
             msg = "请输入主题内容";
-        }else if(noticeType==1 && !request.imgloc){
+        }else if(!request.imgloc){
             msg = "请上传图片";
         }else if (noticeType==2 && !request.relationid){
             msg = "请选择关联商品";
@@ -159,12 +159,12 @@ export default class Add extends React.Component{
         });
     }
     filterHandle(e){
-        this.listRequest.relationname = e;
-        commodityList(this.listRequest).then((data)=>{
+        this.listRequest.goodsName = e;
+        upCommodityList(this.listRequest).then((data)=>{
             let list = data.dataList || [];
             let arr = [];
             list.map((item,i)=>{
-                arr.push({key:item.goodsName,value:item.goodsId})
+                arr.push({key:item.goodsname,value:item.goodsid})
             });
             this.setState({goodsData:arr});
         })
@@ -206,29 +206,27 @@ export default class Add extends React.Component{
                                disable = {!!type}
                                require = {true}
                                label = "通知内容："/>
+                    <div>
+                        <div className="clearfix">
+                            <label className="left-label left"> <span className="require">*</span>上传图片：</label>
+                            {
+                                !!type?
+                                    file.map((item,index)=>{
+                                        return(
+                                            <div className="check-img-wrap" key = {index}>
+                                                <img src={item.url} alt=""/>
+                                            </div>
+                                        )
+                                    })
+                                    :
+                                    <AntUpload fileList = {file}
+                                               callback = {this.uploadCallback}
+                                               length = {6} />
+                            }
+                        </div>
+                    </div>
                     {
-                        noticeType==1?
-                            <div>
-
-                                <div className="clearfix">
-                                    <label className="left-label left"> <span className="require">*</span>上传图片：</label>
-                                    {
-                                        !!type?
-                                            file.map((item,index)=>{
-                                                return(
-                                                    <div className="check-img-wrap" key = {index}>
-                                                        <img src={item.url} alt=""/>
-                                                    </div>
-                                                )
-                                            })
-                                            :
-                                            <AntUpload fileList = {file}
-                                                       callback = {this.uploadCallback}
-                                                       length = {6} />
-                                    }
-                                </div>
-                            </div>
-                            :
+                        noticeType==2 &&
                             <div>
 
                                 <label className="left-label "><span className="require">*</span>关联商品：</label>
@@ -237,7 +235,7 @@ export default class Add extends React.Component{
                                     value={goodsSelect}
                                     filter={true}
                                     disable = {!!type}
-                                    className="rui-theme-1"
+                                    className="rui-theme-1 min-w-260"
                                     callback = {this.selectGoods}
                                     stuff={true}
                                     filterCallback={this.filterHandle}>

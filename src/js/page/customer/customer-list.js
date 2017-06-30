@@ -32,7 +32,7 @@ export default class List extends React.Component{
                 warn:""
             },
             list:[],
-            defaultSelect:{key:"正常",value:1},
+            defaultSelect:{key:"全部",value:""},
             checkedAll:false,
             balance:0,
             moneySort:1,
@@ -166,13 +166,14 @@ export default class List extends React.Component{
         let arr = [];
         list.map((item)=>{
             if(item.checked){
-                arr.push(item.account);
+                arr.push(item.clientId);
             }
         });
         if(!arr.length){
             RUI.DialogManager.alert("请选择需要导出的客户");
             return;
         }
+        window.open(commonUrl + "/djt/web/export/clientexp.do?clientId="+JSON.stringify(arr))
     }
     checkDetail(clientId){
         hashHistory.push(`customerDetail?clientId=${clientId}`);
@@ -209,7 +210,7 @@ export default class List extends React.Component{
                                    onChange = {this.inputChange}
                                    placeholder = "请输入要查询的姓名、公司名称、账号、地区"/>
                         <label className="m-l-r-10">余额情况：</label>
-                        <RUI.Select  data = {[{key:"正常",value:0},{key:"异常",value:1}]}
+                        <RUI.Select  data = {[{key:"全部",value:""},{key:"正常",value:0},{key:"异常",value:1}]}
                                      className = "w-70 rui-theme-1 "
                                      callback = {this.select}
                                      value = {defaultSelect}/>
@@ -218,7 +219,6 @@ export default class List extends React.Component{
                             level != 4 &&
                             <div className="right">
                                 <RUI.Button onClick = {this.batchExport}>批量导出</RUI.Button>
-                                <RUI.Button onClick = {this.set}>余额设置</RUI.Button>
                                 <RUI.Button onClick = {this.add} className = "primary">新增客户</RUI.Button>
                             </div>
                         }
@@ -255,7 +255,7 @@ export default class List extends React.Component{
                                 list.map((item,index)=>{
                                     let address = (item.sheng || "") + (item.shi || "") + (item.qu || "") + (item.addetail || "");
                                     return(
-                                        <tr key = {index}>
+                                        <tr key = {index} className={item.warn=="正常"?"":"font-color-red"}>
                                             <td className="text-left p-l-15">
                                                 <RUI.Checkbox onChange = {this.check.bind(this,item,index)}
                                                               selected = {item.checked?1:0}> {item.clientname}</RUI.Checkbox>

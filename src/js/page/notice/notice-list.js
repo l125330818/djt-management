@@ -160,8 +160,6 @@ export default class List extends React.Component{
                     success(data){
                         if(data.status == "0000"){
                             Pubsub.publish("showMsg",["success","删除成功"]);
-                            let {listRequest} = _this.state;
-                            listRequest.pageNum = 1;
                             _this.setState({checkedAll:false},()=>{
                                 _this.getList();
                             });
@@ -259,8 +257,8 @@ export default class List extends React.Component{
                                             <td>{item.uptime}</td>
                                             <td>{item.downtime}</td>
                                             <td>{item.location}</td>
-                                            <td>{item.status==0?"上线":"下线"}</td>
                                             <td>{item.ranged}</td>
+                                            <td>{item.status==0?"上线":"下线"}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkDetail.bind(this,item)}>查看&nbsp;|</a>
                                                 <a href="javascript:;" onClick = {this.ground.bind(this,item)}>&nbsp;{item.status==0?"下线":"上线"}&nbsp; |</a>

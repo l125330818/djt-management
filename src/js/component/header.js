@@ -6,13 +6,13 @@ import LabelInput from "./label-input";
 import 'antd/lib/Breadcrumb/style/css';
 import Pubsub from "../util/pubsub";
 import {hashHistory} from "react-router";
-let week = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日",]
+let week = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六",]
 export default class Header extends React.Component{
     constructor(props){
         super(props);
         this.state = {
             year:new Date().Format("yyyy-MM-dd"),
-            week:week[new Date().getDay()-1],
+            week:week[new Date().getDay()],
             day:new Date().Format(" hh:mm:ss"),
             request:{
                 username:localStorage.userName,
@@ -26,13 +26,13 @@ export default class Header extends React.Component{
         this.dialogSubmit = this.dialogSubmit.bind(this);
     }
     componentDidMount(){
-        this.timer && clearInterval(this.timer);
-        this.timer = setInterval(()=>{
-            this.setState({
-                day:new Date().Format(" hh:mm:ss"),
-                week:week[new Date().getDay()-1],
-                year:new Date().Format("yyyy-MM-dd")});
-        },1000)
+        // this.timer && clearInterval(this.timer);
+        // this.timer = setInterval(()=>{
+        //     this.setState({
+        //         day:new Date().Format(" hh:mm:ss"),
+        //         week:week[new Date().getDay()],
+        //         year:new Date().Format("yyyy-MM-dd")});
+        // },1000)
     }
     componentWillUnmount(){
         this.timer && clearInterval(this.timer);
@@ -72,9 +72,9 @@ export default class Header extends React.Component{
             success(data){
                 if(data.status == "0000"){
                     Pubsub.publish("showMsg",["success","修改成功"]);
-                    this.timer = this.setTimeout(()=>{
+                    this.setTimeout(()=>{
                         hashHistory.push("/login");
-                    },1000);
+                    },1000)
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -93,10 +93,10 @@ export default class Header extends React.Component{
                     <div className="header-title">
                         <h1>代经通后台管理系统</h1>
                     </div>
-                    <div>
+                    <div className="line-40">
                         <span className="m-r-10">{year}</span>
                         <span>{week}</span>
-                        <p>{day}</p>
+                        {/*<p>{day}</p>*/}
                     </div>
                     <div className="login-out-div">
                         <a className="m-r-20" onClick = {this.modifyPwd}>修改密码</a>

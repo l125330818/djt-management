@@ -17,6 +17,21 @@ export function commodityList(paramType){
         }
     })
 }
+export function upCommodityList(paramType){
+    return $.ajax({
+        url:commonUrl+"/djt/weixin/goodsmang/goodlist.do ",
+        type:"post",
+        dataType:"json",
+        data:paramType,
+    }).then((data)=>{
+        if(data.status == "0000"){
+            return data.data;
+        }else{
+            Pubsub.publish("showMsg",["wrong",data.msg]);
+            return data;
+        }
+    })
+}
 export function brandList(paramType){
     return $.ajax({
         url:commonUrl+"/djt/web/goodsmang/brandlist.do",

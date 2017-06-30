@@ -165,15 +165,6 @@ export default class Add extends React.Component{
         }else if(!request.goodsname){
             msg = "请输入商品名称";
             flag = false;
-        }else if(!request.desc1){
-            msg = "请输入商品描述1";
-            flag = false;
-        }else if(!request.desc2){
-            msg = "请输入商品描述2";
-            flag = false;
-        }else if(!request.desc3){
-            msg = "请输入商品描述3";
-            flag = false;
         }else if(!request.brand){
             msg = "请选择品牌";
             flag = false;
@@ -265,17 +256,14 @@ export default class Add extends React.Component{
                     <LabelArea onChange = {this.changeInput.bind(this,"desc1")}
                                value = {request.desc1}
                                disable = {type == "check"}
-                               require = {true}
                                label = "商品描述1："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc2")}
                                value = {request.desc2}
                                disable = {type == "check"}
-                               require = {true}
                                label = "商品描述2："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc3")}
                                value = {request.desc3}
                                disable = {type == "check"}
-                               require = {true}
                                label = "商品描述3："/>
                     <LabelSelect require = {true}
                                  label = "品牌："
