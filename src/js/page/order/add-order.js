@@ -7,8 +7,10 @@ import "../../../css/page/order.scss";
 import LimitInput from "../../component/limitInput";
 import {orderDetail,getOrderNo} from "../ajax/orderAjax";
 import {hashHistory} from "react-router";
-import {upCommodityList,getCompany} from "../ajax/commodityAjax";
+import {commodityList,getCompany} from "../ajax/commodityAjax";
+import {recvList} from "../ajax/customerAjax";
 import Pubsub from "../../util/pubsub";
+import Select from "../../component/Select";
 let qqReg = /^\d+$/;
 let accountReg = /^[0-9a-zA-Z]+$/g;
 export default class List extends React.Component{
@@ -60,7 +62,7 @@ export default class List extends React.Component{
             },
             addRequest:{
                 companyName:localStorage.companyName || "",
-                orderNo:"DH13213123",
+                orderNo:"",
                 goodsInfo:[],
                 remark:"",
                 clientId:"",
@@ -71,8 +73,9 @@ export default class List extends React.Component{
             ids:[],
             companyList:[],
             goodsList:[],
-            companySelect:{key:'无',value:'0'},
-            goodsSelect:{key:'无',value:'0'},
+            companySelect:{key:'请选择',value:'0'},
+            goodsSelect:{key:'请选择',value:'0'},
+            consigneeSelect:{key:'请选择',value:0},
             companyShow:false,
             checkedAll:false,
             orderNo:"",
@@ -81,8 +84,10 @@ export default class List extends React.Component{
         this.selectCompany = this.selectCompany.bind(this);
         this.orderNoChange = this.orderNoChange.bind(this);
         this.saveData = this.saveData.bind(this);
+        this.onKeyup = this.onKeyup.bind(this);
         this.orderNo = this.props.location.query.orderNo;
         this.type = this.props.location.query.type;
+        this.clientId = this.props.location.query.clientId;
     }
 
     componentDidMount() {
@@ -113,6 +118,13 @@ export default class List extends React.Component{
                 this.getTotalPrice();
             });
         });
+        recvList({clientId:this.clientId}).then((data)=>{
+            let consigneeList = [];
+            data.map((item)=>{
+                consigneeList.push({key:item.adressdetail,value:item.id,obj:item});
+            });
+            this.setState({consigneeList});
+        })
     }
     getTotalPrice(){
         let {list} = this.state;
@@ -135,8 +147,24 @@ export default class List extends React.Component{
         let {list,addRequest} = this.state;
         if(type == "goodsSelect"){
             list.push(Object.assign(e.detail,{count:1}));
+        }else if(type == "consigneeSelect"){
+            addRequest.sheng = e.obj.sheng;
+            addRequest.shi = e.obj.shi;
+            addRequest.qu = e.obj.qu;
+            addRequest.tel = e.obj.tel;
+            addRequest.recvname = e.obj.recvname;
+            addRequest.adressdetail = e.obj.adressdetail;
+
         }else{
             addRequest.clientId = e.value;
+            recvList({clientId:e.value}).then((data)=>{
+                let consigneeList = [];
+                data.map((item)=>{
+                    consigneeList.push({key:item.adressdetail,value:item.id,obj:item});
+                });
+                this.setState({consigneeList});
+            })
+
         }
         let jsonStr = JSON.stringify(list);
         let arr = JSON.parse(jsonStr);
@@ -145,11 +173,10 @@ export default class List extends React.Component{
             this.getTotalPrice();
         });
     }
-    filterHandle(type,e){
+    filterHandle(type,value,e){
         let {goodsRequest} = this.state;
-
         if(type == "company"){
-            let request = {companyName:localStorage.companyName,query:e}
+            let request = {companyName:localStorage.companyName,query:value}
             getCompany(request).then((data)=>{
                 let companyList = [];
                 data.map((item)=>{
@@ -157,9 +184,10 @@ export default class List extends React.Component{
                 });
                 this.setState({companyList});
             })
+
         }else if(type == "goods"){
-            goodsRequest.goodsName = e;
-            upCommodityList(goodsRequest).then((data)=>{
+            goodsRequest.goodsName = value;
+			commodityList(goodsRequest).then((data)=>{
                 let dataList = data.dataList;
                 let goodsList = [];
                 dataList.map((item)=>{
@@ -182,12 +210,12 @@ export default class List extends React.Component{
         });
     }
     saveData(){
-        let {list,addRequest} = this.state;
+        let {list,addRequest,consigneeSelect} = this.state;
         let msg = "";
         if(!addRequest.clientId){
             msg = "请选择公司";
         }else if(!list.length){
-            msg = "请选择商品"
+            msg = "请选择商品";
         }else{
             msg = "";
         }
@@ -217,33 +245,37 @@ export default class List extends React.Component{
             }
         })
     }
+    onKeyup(e){
+
+    }
     render(){
-        let {list,goodsList,goodsSelect,defaultSelect,companyList,companySelect,orderNo,totalPrice,addRequest} =this.state;
+        let {list,goodsList,goodsSelect,defaultSelect,companyList,companySelect,orderNo,totalPrice,addRequest,consigneeList,consigneeSelect} =this.state;
         return(
             <div>
                 <Layout mark = "dd" bread = {["订单管理",this.type==1?"添加订货单":"添加退货单"]}>
                     <div className="search-div relative">
                         <label className=""><span className="require">*</span>公司名称：</label>
-                        <RUI.Select
+                        <Select
                             data={companyList}
                             value={companySelect}
                             filter={true}
+                            scrollId = "1"
                             className="rui-theme-1 min-w-260"
                             callback = {this.selectCompany.bind(this,"companySelect")}
                             stuff={true}
                             filterCallback={this.filterHandle.bind(this,"company")}>
-                        </RUI.Select>
+                        </Select>
                         <label className="m-l-20"><span className="require">*</span>商品名称：</label>
-                        <RUI.Select
+                        <Select
                             data={goodsList}
                             value={goodsSelect}
                             filter={true}
+                            scrollId = "2"
                             className="rui-theme-1 min-w-260"
-                            inputValue = "222"
                             callback = {this.selectCompany.bind(this,"goodsSelect")}
                             stuff={true}
                             filterCallback={this.filterHandle.bind(this,"goods")}>
-                        </RUI.Select>
+                        </Select>
                         {/*<label  className="m-l-20">时间：</label>*/}
                         {/*<LimitInput   value = {new Date().Format("yyyy-MM-dd hh : mm : ss")}*/}
                                       {/*require = {true}*/}
@@ -255,13 +287,17 @@ export default class List extends React.Component{
                                       onChange = {this.orderNoChange.bind(this,"orderNo")} />
                     </div>
                     <div className="total-div">
-                        <h3>
-                            合计:
-                            <span className="font-color-red">{totalPrice}</span>
-                            <label  className="m-l-20">备注：</label>
-                            <RUI.Input   onChange = {this.orderNoChange.bind(this,"remark")} />
-                        </h3>
-
+                        <label>收货地址：</label>
+                        <RUI.Select
+                            data={consigneeList}
+                            value={consigneeSelect}
+                            className="rui-theme-1"
+                            callback = {this.selectCompany.bind(this,"consigneeSelect")}>
+                        </RUI.Select>
+                        <label  className="m-l-20">备注：</label>
+                        <RUI.Input className = "m-r-20"  onChange = {this.orderNoChange.bind(this,"remark")} />
+                        合计:
+                        <span className="font-color-red">{totalPrice}</span>
                     </div>
                     <div className="order-content">
                         <table className="table">

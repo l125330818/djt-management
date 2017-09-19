@@ -118,9 +118,6 @@ export default class Recharg extends React.Component{
             dataType:"json",
             success(data){
                 if(data.status == "0000"){
-                    setTimeout(()=>{
-                        hashHistory.push("customerList");
-                    },1000);
                     Pubsub.publish("showMsg",["success","充值成功"]);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);

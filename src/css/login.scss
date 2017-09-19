@@ -1,21 +1,70 @@
 .login-wrapper{
   width: 100%;
   height: 100%;
-  background-color: #4a9df8;
+  background: url("../images/layout/bg.png") no-repeat;
+  background-size:100% 100%;
   .login-box{
     text-align: center;
     position: fixed;
     top: 50%;
     left: 50%;
-    width:300px;
-    height: 300px;
+    width:420px;
+    height: 454px;
+    background:rgba(8,48,81,.3);
     transform: translateX(-50%) translateY(-50%);
+    box-shadow: 1px 1px 10px rgba(118,212,247,0.3);
+    p{
+      margin: 10px 0;
+      text-align: left;
+      padding-left: 60px;
+      color: #fff;
+    }
+    .img{
+      position: absolute;
+      left: 70px;
+      top: 36px;
+    }
   }
-  .w-280{width: 280px !important;}
+  .w-280{width: 340px !important;}
   .user-div{
-    margin: 100px 0 20px 0;
   }
   .login-btn{
-    margin-top: 20px;
+    margin-top: 45px;
   }
+}
+#app{
+  height:100%;
+  width:100%;
+}
+.login-input{
+  width: 340px;
+  height: 34px;
+  padding-left: 94px;
+}
+.btn{
+  background-color: #086aa4 !important;
+  border-radius: 40px !important;
+  border-color: #086aa4 !important;
+  line-height: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+}
+.logo{
+  height:140px;
+  padding-top: 41px;
+}
+.color-fff{
+  color:#fff;
+}
+.remember{
+  text-align: left;
+  padding-left: 40px;
+  padding-top: 10px;
+}
+.margin0{
+  margin-top: 0 !important;
+}
+.remember-span{
+  font-size: 14px;
+  padding-left: 20px;
 }

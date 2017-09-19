@@ -93,4 +93,9 @@ export const storageList = (location, callback) => {
         callback(null, require('./js/page/commodity/storage-list').default)
     },"storageList")
 };
+export const addressList = (location, callback) => {
+    require.ensure([], require => {
+        callback(null, require('./js/page/customer/address-list').default)
+    },"addressList")
+};
 

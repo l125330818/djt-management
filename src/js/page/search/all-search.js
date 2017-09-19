@@ -26,7 +26,8 @@ export default class List extends React.Component{
                 brand:"",
                 series:"",
                 product:"",
-                stdate : moment(new Date()-86400*100*1000).format("YYYY-MM-DD"),
+                // stdate : moment(new Date()-86400*100*1000).format("YYYY-MM-DD"),
+                stdate : "2017-01-01",
                 endate : moment(new Date()).format("YYYY-MM-DD"),
                 pageNum:1,
                 pageSize:10
@@ -54,6 +55,7 @@ export default class List extends React.Component{
         this.datePickerChange = this.datePickerChange.bind(this);
         this.goPage = this.goPage.bind(this);
         this.export = this.export.bind(this);
+        this.reset = this.reset.bind(this);
       }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
@@ -83,6 +85,29 @@ export default class List extends React.Component{
     }
     componentWillUnmount(){
         document.removeEventListener("keyup",this.enterKey.bind(this));
+    }
+	reset(){
+        let {selectType} = this.state;
+		let obj = {
+			companyName:localStorage.companyName || "",
+			brand:"",
+			series:"",
+			product:"",
+			// stdate : moment(new Date()-86400*100*1000).format("YYYY-MM-DD"),
+			stdate : "2017-01-01",
+			endate : moment(new Date()).format("YYYY-MM-DD"),
+			pageNum:1,
+			pageSize:10
+		};
+		this.setState({
+			listRequest:obj
+		},()=>{
+			if(selectType == 1){
+				this.getGoodsList();
+			}else{
+				this.getBalanceList();
+			}
+		})
     }
     getGoodsList(pageNo=1){
         let _this = this;
@@ -252,6 +277,7 @@ export default class List extends React.Component{
                                      value={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}
                                      defaultValue={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}/>
                         <RUI.Button onClick = {this.query} className = "primary" >查询</RUI.Button>
+                        <RUI.Button onClick = {this.reset} className = "primary" >重置</RUI.Button>
                         {
                             selectType==1?
                                 <label className="m-l-r-10 line-32">合计：<span className="require">{money}</span></label>
@@ -275,16 +301,24 @@ export default class List extends React.Component{
                         selectType == 1?
                             <div className = "search-div p-t-0">
                                 <label className="m-l-r-10">品牌：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"brand")} placeholder = "请输入品牌"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"brand")}
+                                             value = {listRequest.brand}
+                                             placeholder = "请输入品牌"/>
                                 <label className="m-l-r-10">系列：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"series")} placeholder = "请输入系列"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"series")}
+                                             value = {listRequest.series}
+                                             placeholder = "请输入系列"/>
                                 <label className="m-l-r-10">商品：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"product")} placeholder = "请输入商品"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"product")}
+                                             value = {listRequest.product}
+                                             placeholder = "请输入商品"/>
                             </div>
                             :
                             <div className = "search-div p-t-0">
                                 <label className="m-l-r-10">品牌：</label>
-                                <RUI.Input   onChange = {this.inputChange.bind(this,"brand")} placeholder = "请输入品牌"/>
+                                <RUI.Input   onChange = {this.inputChange.bind(this,"brand")}
+                                             value = {listRequest.brand}
+                                             placeholder = "请输入品牌"/>
                             </div>
                     }
 
@@ -303,7 +337,7 @@ export default class List extends React.Component{
                                         <td className="col-10">商品分类</td>
                                         <td className="col-10">单位</td>
                                         <td className="col-10">价格(元)</td>
-                                        <td className="col-10">数量</td>
+                                        <td className="col-10">销售数量</td>
                                         <td className="col-10">对象</td>
                                         <td className="col-15">时间</td>
                                     </tr>
@@ -323,7 +357,7 @@ export default class List extends React.Component{
                                 list.length>0 && list.map((item,index)=>{
                                     return(
                                         selectType==1?
-                                            <tr key = {index}>
+                                            <tr key = {index} className={item.type==-1?"font-color-red":""}>
                                                 <td className="text-left p-l-15 ">
                                                     <RUI.Checkbox
                                                         onChange = {this.check.bind(this,item,index)}
@@ -334,7 +368,7 @@ export default class List extends React.Component{
                                                 <td>{item.classify}</td>
                                                 <td>{item.unit}</td>
                                                 <td>{item.price}</td>
-                                                <td>{`${item.count}`}</td>
+                                                <td>{(item.type==-1?"-":"")+item.count}</td>
                                                 <td>{item.clientname || "无"}</td>
                                                 <td>
                                                     {item.ordertime}

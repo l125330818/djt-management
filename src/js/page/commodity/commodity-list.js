@@ -31,11 +31,12 @@ export default class List extends React.Component{
                 series:"",
                 classify:"",
                 goodsName:"",
-                stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
+                // stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
+                stdate : "2017-01-01",
                 endate : moment(new Date()).format("YYYY-MM-DD"),
-                keyword:"goodsLeft",
+                keyword:"",
                 pageNum:1,
-                seq:"desc",
+                seq:"",
                 pageSize:10,
 
             },
@@ -56,6 +57,8 @@ export default class List extends React.Component{
         this.goPage = this.goPage.bind(this);
         this.addStorage = this.addStorage.bind(this);
         this.addStorageSubmit = this.addStorageSubmit.bind(this);
+        this.batchExport = this.batchExport.bind(this);
+        this.reset = this.reset.bind(this);
     }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
@@ -72,6 +75,27 @@ export default class List extends React.Component{
     }
     componentWillUnmount(){
         document.removeEventListener("keyup",this.enterKey.bind(this));
+    }
+	reset(){
+        let requestObj = {
+			companyName:localStorage.companyName || "",
+			brand:"",
+			series:"",
+			classify:"",
+			goodsName:"",
+			// stdate : moment(new Date()-86400*30*1000).format("YYYY-MM-DD"),
+			stdate : "2017-01-01",
+			endate : moment(new Date()).format("YYYY-MM-DD"),
+			keyword:"",
+			pageNum:1,
+			seq:"",
+			pageSize:10,
+        };
+        this.setState({
+            listRequest:requestObj
+        },()=>{
+            this.getList();
+        })
     }
     getList(pageNo=1){
         let _this = this;
@@ -94,6 +118,16 @@ export default class List extends React.Component{
     }
     manageAttr(){
         hashHistory.push("commodityAttr");
+    }
+	batchExport(){
+        if(!this.state.list.length){
+			Pubsub.publish("showMsg",["wrong","没有数据可导出"]);
+			return;
+        }
+        let {brand,series,classify,goodsName,stdate,endate} = this.state.listRequest;
+        let requestStr = `id=&isall=1&companyName=${localStorage.companyName}&brand=${brand}&series=${series}&classify=${classify}&goodsName=${goodsName}&stdate=${stdate}&endate=${endate}`;
+		window.open(commonUrl + "/djt/web/export/goodsexp.do?"+requestStr);
+        console.log(commonUrl + "/djt/web/export/goodsexp.do?" + requestStr)
     }
     disabledDate(current){
         return current && current.valueOf() > Date.now();
@@ -190,10 +224,9 @@ export default class List extends React.Component{
                     success(data){
                         if(data.status == "0000"){
                             Pubsub.publish("showMsg",["success","删除成功"]);
-                            let {listRequest} = _this.state;
-                            listRequest.pageNum = 1;
+                            let {pager} = _this.state;
                             _this.setState({checkedAll:false},()=>{
-                                _this.getList();
+                                _this.getList(pager.currentPage);
                             });
                         }else{
                             Pubsub.publish("showMsg",["wrong",data.msg]);
@@ -204,6 +237,7 @@ export default class List extends React.Component{
         });
     }
     groundAjax(id,status){
+        let {pager} = this.state;
         let _this = this;
         $.ajax({
             url:commonUrl + "/djt/web/goodsmang/batchupdate.do",
@@ -214,7 +248,7 @@ export default class List extends React.Component{
                 if(data.status == "0000"){
                     Pubsub.publish("showMsg",["success",status==1?"下架成功":"上架成功"]);
                     _this.setState({checkedAll:false});
-                    _this.getList();
+                    _this.getList(pager.currentPage);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -269,7 +303,7 @@ export default class List extends React.Component{
         // this.setState({inNum:e.target.value});
     }
     addStorageSubmit(){
-        let {inNum,goodsId,storageType} = this.state;
+        let {inNum,goodsId,storageType,pager} = this.state;
         let _this = this;
         if(!inNum){
             Pubsub.publish("showMsg",["wrong","请输入库存数量"]);
@@ -284,7 +318,7 @@ export default class List extends React.Component{
             success(data){
                 if(data.status == "0000"){
                     Pubsub.publish("showMsg",["success","操作成功"]);
-                    _this.getList();
+                    _this.getList(pager.currentPage);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -301,22 +335,29 @@ export default class List extends React.Component{
                         <div className="left">
                             <span>品牌：</span>
                             <RUI.Input className = "search-input"
-                                       onChange = {this.inputChange.bind(this,"brand")} placeholder = "请输入品牌"/>
+                                       onChange = {this.inputChange.bind(this,"brand")}
+                                       value = {listRequest.brand}
+                                       placeholder = "请输入品牌"/>
                             <span>系列：</span>
                             <RUI.Input className = "search-input"
-                                       onChange = {this.inputChange.bind(this,"series")} placeholder = "请输入系列"/>
+                                       onChange = {this.inputChange.bind(this,"series")}
+                                       value = {listRequest.series}
+                                       placeholder = "请输入系列"/>
                             <span>分类：</span>
                             <RUI.Input className = "search-input"
-                                       onChange = {this.inputChange.bind(this,"classify")} placeholder = "请输入分类"/>
+                                       onChange = {this.inputChange.bind(this,"classify")}
+                                       value = {listRequest.classify}
+                                       placeholder = "请输入分类"/>
                             <span>商品名称：</span>
                             <RUI.Input className = "search-input"
-                                       onChange = {this.inputChange.bind(this,"goodsName")} placeholder = "请输入商品名称"/>
+                                       onChange = {this.inputChange.bind(this,"goodsName")}
+                                       value = {listRequest.goodsName}
+                                       placeholder = "请输入商品名称"/>
                             <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
+                            <RUI.Button onClick = {this.reset} className = "primary" >重置</RUI.Button>
                         </div>
                        <div className="right">
-                           <RUI.Button onClick = {this.batchGround.bind(this,0)}>批量上架</RUI.Button>
-                           <RUI.Button onClick = {this.batchGround.bind(this,1)}>批量下架</RUI.Button>
-                           <RUI.Button onClick = {this.batchDelete}>批量删除</RUI.Button>
+
                            <RUI.Button onClick = {this.add} className = "primary">新增商品</RUI.Button>
                            <RUI.Button onClick = {this.manageAttr} className = "primary">属性管理</RUI.Button>
 
@@ -329,6 +370,10 @@ export default class List extends React.Component{
                                      allowClear ={false}
                                      value={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}
                                      defaultValue={[moment(listRequest.stdate, 'YYYY-MM-DD'),moment(listRequest.endate, 'YYYY-MM-DD')]}/>
+                        <RUI.Button onClick = {this.batchGround.bind(this,0)}>批量上架</RUI.Button>
+                        <RUI.Button onClick = {this.batchGround.bind(this,1)}>批量下架</RUI.Button>
+                        <RUI.Button onClick = {this.batchDelete}>批量删除</RUI.Button>
+                        <RUI.Button onClick = {this.batchExport}>全部导出</RUI.Button>
                     </div>
 
                     <div className="order-content">

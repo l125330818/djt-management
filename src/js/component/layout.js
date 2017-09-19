@@ -9,6 +9,7 @@ import Pubsub from "../util/pubsub";
 import Data from "../component/Data";
 import {hashHistory} from "react-router";
 window.commonUrl = "https://www.djtserver.cn";
+// window.commonUrl = "http://123.207.73.114:8090";
 window.userid = Data.userInfo.userid || "";
 Date.prototype.Format = function (fmt) {
     var o = {

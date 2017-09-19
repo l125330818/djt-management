@@ -8,6 +8,7 @@ import Badge  from 'antd/lib/badge';
 import 'antd/lib/badge/style/css';
 import {hashHistory} from "react-router";
 import {orderList,unRead} from "../ajax/orderAjax";
+import test from "./test";
 export default class List extends React.Component{
     // 构造
       constructor(props) {
@@ -52,6 +53,7 @@ export default class List extends React.Component{
         this.goPage = this.goPage.bind(this);
         this.export = this.export.bind(this);
         this.newOrder = this.newOrder.bind(this);
+        this.reset = this.reset.bind(this);
       }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
@@ -71,6 +73,25 @@ export default class List extends React.Component{
     }
     componentWillUnmount(){
         document.removeEventListener("keyup",this.enterKey.bind(this));
+    }
+	reset(){
+        let {listRequest} = this.state;
+        let resetObj = {
+			companyName:localStorage.companyName || "",
+            keyword:"",
+            query:"",
+            pageNum:1,
+            pageSize:10,
+            type:listRequest.type,
+            status:""
+		};
+        this.setState({
+            listRequest:resetObj,
+			defaultSelect:{key:"全部",value:""},
+			keywords:""
+        },()=>{
+            this.getList();
+        })
     }
     getUnread(){
         unRead({companyName:localStorage.companyName || ""}).then((data)=>{
@@ -155,12 +176,15 @@ export default class List extends React.Component{
     inputChange(e){
         let {listRequest} = this.state;
         listRequest.query = e.target.value;
+        this.setState({
+			keywords:e.target.value
+        })
     }
     select(e){
         let {listRequest,defaultSelect} = this.state;
         defaultSelect = e;
         listRequest.status = e.value;
-        this.setState({},()=>{
+        this.setState({defaultSelect},()=>{
             this.getList();
         });
     }
@@ -174,8 +198,8 @@ export default class List extends React.Component{
     newOrder(){
         hashHistory.push(`addOrder?type=${this.state.listRequest.type}`);
     }
-    addOrder(id){
-        hashHistory.push(`addOrder?orderNo=${id}&type=${this.state.listRequest.type}`);
+    addOrder(id,clientId){
+        hashHistory.push(`addOrder?orderNo=${id}&type=${this.state.listRequest.type}&clientId=${clientId}`);
     }
     typeClick(type){
         let {listRequest} = this.state;
@@ -208,12 +232,13 @@ export default class List extends React.Component{
         // })
     }
     render(){
-        let {pager,list,checkedAll,selectValue,defaultSelect,unRead,listRequest} =this.state;
+        let {pager,list,checkedAll,selectValue,defaultSelect,unRead,listRequest,keywords} =this.state;
         let orderStatus = selectValue;
         if(listRequest.type == -1){
             orderStatus = [
-                {key:"全部",value:""},{key:"待审核",value:-2},
-                {key:"已拒绝",value:-1},{key:"已退回",value:0},
+                {key:"全部",value:""},{key:"待受理",value:1},
+                {key:"待退货",value:2},{key:"待审核",value:3},
+                {key:"退货完成",value:4},{key:"已拒绝",value:0},
             ]
         }
         return(
@@ -230,7 +255,7 @@ export default class List extends React.Component{
                         </RUI.Button>
                     </div>
                     <div className="search-div">
-                        <RUI.Input   onChange = {this.inputChange} className = "w-200" placeholder = "请输入订单号或公司名称"/>
+                        <RUI.Input   onChange = {this.inputChange} value = {keywords} className = "w-200" placeholder = "请输入订单号或公司名称"/>
                         <label className="m-l-r-10">订单状态：</label>
                         <RUI.Select  data = {orderStatus}
                                      className = "w-90 rui-theme-1 "
@@ -238,6 +263,7 @@ export default class List extends React.Component{
                                      value = {defaultSelect}/>
 
                         <RUI.Button onClick = {this.query} className = "primary" >查询</RUI.Button>
+                        <RUI.Button onClick = {this.reset} className = "primary" >重置</RUI.Button>
                         <div className="right">
                             <RUI.Button  className = "primary" onClick = {this.newOrder}>添加订单</RUI.Button>
                             <RUI.Button onClick = {this.export}>导出</RUI.Button>
@@ -265,7 +291,7 @@ export default class List extends React.Component{
                                     let styleStr = "";
                                     if(item.status == 0){
                                         styleStr = "font-color-red";
-                                    }else if(item.warn == 1 && item.status !=4){
+                                    }else if(item.warn == 1 && item.status !=4 && item.type !=-1){
                                         styleStr = "font-color-yellow"
                                     }
                                     return(
@@ -291,7 +317,7 @@ export default class List extends React.Component{
                                             <td>{item.handler}</td>
                                             <td>
                                                 <a href="javascript:;" onClick = {this.queryDetail.bind(this,item.orderno)}>查看&nbsp;|</a>
-                                                <a href="javascript:;" onClick = {this.addOrder.bind(this,item.orderno)}>&nbsp;新增</a>
+                                                <a href="javascript:;" onClick = {this.addOrder.bind(this,item.orderno,item.clientid)}>&nbsp;新增</a>
                                             </td>
                                         </tr>
                                     )

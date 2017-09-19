@@ -8,7 +8,7 @@ import {hashHistory} from "react-router";
 import LabelInput from "../../component/label-input";
 import Pubsub from "../../util/pubsub";
 const moneyReg = /^(0(?:[.](?:[1-9]\d?|0[1-9]))|[1-9]\d{0,9}(?:[.]\d{0,2}|$)|0([.]0{0,2})?)$/;
-import {customerList,getMoneySetting} from "../ajax/customerAjax";
+import {customerList,recvList} from "../ajax/customerAjax";
 export default class List extends React.Component{
     // 构造
     constructor(props) {
@@ -37,6 +37,7 @@ export default class List extends React.Component{
             balance:0,
             moneySort:1,
             levelSort:1,
+			keywords:"",
         };
         this.recharge = this.recharge.bind(this);
         this.sortFn = this.sortFn.bind(this);
@@ -48,6 +49,7 @@ export default class List extends React.Component{
         this.goPage = this.goPage.bind(this);
         this.batchExport = this.batchExport.bind(this);
         this.balanceInput = this.balanceInput.bind(this);
+        this.reset = this.reset.bind(this);
         this.level = localStorage.level;
     }
     componentDidMount(){
@@ -66,6 +68,26 @@ export default class List extends React.Component{
     componentWillUnmount(){
         document.removeEventListener("keyup",this.enterKey.bind(this));
     }
+	reset(){
+		let resetObj = {
+			userid: localStorage.userid || "",
+			query:"",
+			companyName:localStorage.companyName || "",
+			pageNum:1,
+			selectType:1,
+			pageSize:10,
+			keyword:"level",
+			seq:"desc",
+			warn:""
+		};
+		this.setState({
+			listRequest:resetObj,
+			defaultSelect:{key:"全部",value:""},
+			keywords:""
+		},()=>{
+			this.getList();
+		})
+	}
     getList(pageNo=1){
         let _this = this;
         let {pager,listRequest} = this.state;
@@ -92,10 +114,10 @@ export default class List extends React.Component{
         hashHistory.push("addCustomer");
     }
     set(){
-        getMoneySetting().then((data)=>{
-            this.setState({balance:data.moneySetting || 0});
-        });
-        this.refs.dialog.show();
+        // getMoneySetting().then((data)=>{
+        //     this.setState({balance:data.moneySetting || 0});
+        // });
+        // this.refs.dialog.show();
     }
     search(){
         let {listRequest} = this.state;
@@ -107,6 +129,7 @@ export default class List extends React.Component{
     inputChange(e){
         let {listRequest} = this.state;
         listRequest.query = e.target.value;
+        this.setState({keywords:e.target.value});
     }
     check(item,index,e){
         let {list,checkedAll} = this.state;
@@ -153,7 +176,7 @@ export default class List extends React.Component{
         defaultSelect = e;
         listRequest.warn = e.value;
         listRequest.pageNum = 1;
-        this.setState({},()=>{
+        this.setState({defaultSelect},()=>{
             this.getList();
         });
         console.log(listRequest)
@@ -180,6 +203,7 @@ export default class List extends React.Component{
     }
     modifyStatus(item){
         let _this = this;
+        let {pager} = _this.state;
         let request = {
             clientId:item.clientId,
             status : item.status==0?1:0
@@ -192,15 +216,18 @@ export default class List extends React.Component{
             success(data){
                 if(data.status == "0000"){
                     Pubsub.publish("showMsg",["success","操作成功"]);
-                    _this.getList();
+                    _this.getList(pager.currentPage);
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
             }
         });
     }
+    consigneeAddress(clientId){
+        hashHistory.push(`addressList?clientId=${clientId}`);
+    }
     render(){
-        let {pager,customerSort,list,checkedAll,listRequest,defaultSelect,balance,levelSort,moneySort} =this.state;
+        let {pager,customerSort,list,checkedAll,listRequest,defaultSelect,balance,levelSort,moneySort,keywords} =this.state;
         let level = this.level;
         return(
             <div>
@@ -208,6 +235,7 @@ export default class List extends React.Component{
                     <div className="search-div">
                         <RUI.Input className = "w-280 "
                                    onChange = {this.inputChange}
+                                   value = {keywords}
                                    placeholder = "请输入要查询的姓名、公司名称、账号、地区"/>
                         <label className="m-l-r-10">余额情况：</label>
                         <RUI.Select  data = {[{key:"全部",value:""},{key:"正常",value:0},{key:"异常",value:1}]}
@@ -215,6 +243,7 @@ export default class List extends React.Component{
                                      callback = {this.select}
                                      value = {defaultSelect}/>
                         <RUI.Button className = "primary" onClick = {this.search} >查询</RUI.Button>
+                        <RUI.Button onClick = {this.reset} className = "primary" >重置</RUI.Button>
                         {
                             level != 4 &&
                             <div className="right">
@@ -269,17 +298,24 @@ export default class List extends React.Component{
                                             <td>
                                                 <a href="javascript:;" onClick = {this.checkDetail.bind(this,item.clientId)}>查看&nbsp;</a>
                                                 {
-                                                    level != 4 &&
+                                                    level != 4 && item.status==1 &&
                                                     <a href="javascript:;" onClick = {this.modify.bind(this,item.clientId)}>| &nbsp;修改&nbsp; </a>
                                                 }
                                                 {
-                                                    (level != 2 && level !=3 && level != 4) &&
+                                                    (level != 2 && level !=3 && level != 4 && item.status==1) &&
                                                     <a href="javascript:;" onClick = {this.recharge.bind(this,item.clientId)}>| &nbsp;充值&nbsp; </a>
                                                 }
+
                                                 {
                                                     level != 4 &&
                                                     <a href="javascript:;" onClick = {this.modifyStatus.bind(this,item)}>| &nbsp;{item.status==1?"禁用":"启用"}</a>
                                                 }
+                                                <p>
+                                                    {
+                                                        item.status==1 &&
+                                                        <a href="javascript:;" onClick = {this.consigneeAddress.bind(this,item.clientId)}>&nbsp;管理收货地址&nbsp; </a>
+                                                    }
+                                                </p>
                                             </td>
                                         </tr>
                                     )

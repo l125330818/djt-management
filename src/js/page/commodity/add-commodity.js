@@ -136,6 +136,7 @@ export default class Add extends React.Component{
         }
         let {request} = this.state;
         request.goodsId = this.goodsId;
+        console.log(request)
         let url = this.type?"/djt/web/goodsmang/updategoods.do":"/djt/web/goodsmang/addgoods.do";
         let _this = this;
         $.ajax({
@@ -250,7 +251,7 @@ export default class Add extends React.Component{
                     </div>
                     <LabelInput onChange = {this.changeInput.bind(this,"goodsname")}
                                 value = {request.goodsname}
-                                disable = {!!type}
+                                disable = {type == "check"}
                                 require = {true}
                                 label = "商品名称："/>
                     <LabelArea onChange = {this.changeInput.bind(this,"desc1")}
@@ -268,7 +269,7 @@ export default class Add extends React.Component{
                     <LabelSelect require = {true}
                                  label = "品牌："
                                  data = {brandSelect}
-                                 disable = {!!type}
+                                 disable = {type == "check"}
                                  callback = {this.selectBrand}
                                  default = {brandDefault}>
                     </LabelSelect>
@@ -278,17 +279,17 @@ export default class Add extends React.Component{
                                  label = "系列："
                                  data = {seriesSelect}
                                  callback = {this.selectSeries}
-                                 disable = {!!type}
+                                 disable = {type == "check"}
                                  default = {seriesDefault}/>
                     <LabelInput onChange = {this.changeInput.bind(this,"classify")}
                                 value = {request.classify}
                                 require = {true}
-                                disable = {!!type}
+                                disable = {type == "check"}
                                 label = "分类："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"unit")}
                                 value = {request.unit}
                                 require = {true}
-                                disable = {!!type}
+                                disable = {type == "check"}
                                 label = "单位："/>
                     <LabelInput onChange = {this.changeInput.bind(this,"warn")}
                                 value = {request.warn}
@@ -351,13 +352,13 @@ export default class Add extends React.Component{
                                         <td>
                                             <RUI.Input  onChange = {this.changeInput.bind(this,"goodsnum")}
                                                         value = {request.goodsnum}
-                                                        disable = {!!type}
+                                                        disable = {type == "check"}
                                                         className = "w-80"/>
                                         </td>
                                         <td>
                                             <RUI.Input  onChange = {this.changeInput.bind(this,"barcode")}
                                                         value = {request.barcode}
-                                                        disable = {!!type}
+                                                        disable = {type == "check"}
                                                         className = "w-80"/>
                                         </td>
                                     </tr>

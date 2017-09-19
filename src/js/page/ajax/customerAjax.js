@@ -92,9 +92,9 @@ export function storageList(paramType){
         }
     })
 }
-export function getMoneySetting(paramType){
+export function recvList(paramType){
     return $.ajax({
-        url:commonUrl+"/djt/web/psController/getMoneySetting.do",
+        url:commonUrl+"/djt/web/address/recvlist.do",
         type:"post",
         dataType:"json",
         data:paramType,

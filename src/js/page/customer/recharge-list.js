@@ -38,6 +38,7 @@ export default class List extends React.Component{
         this.goPage = this.goPage.bind(this);
         this.batchExport = this.batchExport.bind(this);
         this.check = this.check.bind(this);
+        this.reset = this.reset.bind(this);
     }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
@@ -54,6 +55,21 @@ export default class List extends React.Component{
     }
     componentWillUnmount(){
         document.removeEventListener("keyup",this.enterKey.bind(this));
+    }
+	reset(){
+        let obj = {
+			keyword:"chargetime",
+			query:"",
+			seq:"desc",
+			pageSize:10,
+			pageNum:1,
+			companyName:localStorage.companyName || "",
+        };
+        this.setState({
+            listRequest:obj
+        },()=>{
+            this.getList();
+        })
     }
     getList(pageNo=1){
         let {pager} = this.state;
@@ -142,13 +158,17 @@ export default class List extends React.Component{
         listRequest.query = e.target.value;
     }
     render(){
-        let {pager,sortState,list,checkedAll} =this.state;
+        let {pager,sortState,list,checkedAll,listRequest} =this.state;
         return(
             <div>
                 <Layout mark = "cz" bread = {["充值记录","充值列表"]}>
                     <div className="search-div">
-                        <RUI.Input   onChange = {this.inputChange} className = "w-280" placeholder = "请输入公司名称或用户名或充值品牌"/>
+                        <RUI.Input   onChange = {this.inputChange}
+                                     value = {listRequest.query}
+                                     className = "w-280"
+                                     placeholder = "请输入公司名称或用户名或充值品牌"/>
                         <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
+                        <RUI.Button onClick = {this.reset} className = "primary" >重置</RUI.Button>
                         <div className="right">
                             <RUI.Button onClick = {this.batchExport}>批量导出</RUI.Button>
                         </div>

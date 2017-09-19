@@ -217,10 +217,12 @@ export default class Detail extends React.Component{
     }
     render(){
         let {detail,dispatchGoods,reason} = this.state;
-        let {express} = detail;
+        let {express,addressDetail,sheng,shi,qu,tel,recvName} = detail;
         let level = this.level;
         let type = this.type;
         let status = detail.status;
+        let address = (sheng || "") + (shi || "") + (qu || "") + (addressDetail || "");
+
         return(
             <Layout mark = "dd" bread = {["订单管理","订单列表"]}>
                 <div className="order-detail">
@@ -239,6 +241,19 @@ export default class Detail extends React.Component{
                             detail.reason &&
                             <LabelText label = "作废理由：" text = {detail.reason}/>
                         }
+                        {
+                            recvName &&
+                            <LabelText label = "收货人姓名：" text = {recvName}/>
+                        }
+                        {
+                            tel &&
+                            <LabelText label = "联系方式：" text = {tel}/>
+                        }
+                        {
+                            address &&
+                            <LabelText label = "收货地址：" text = {address}/>
+                        }
+
                         {
                             express && express.expressfirm &&
                             <LabelText label = "物流公司：" text = {express.expressfirm}/>

@@ -128,11 +128,11 @@ export default class Add extends React.Component{
         let msg = "";
         if(!request.theme){
             msg = "请输入通知主题";
-        }else if(!request.content){
-            msg = "请输入主题内容";
+        }else if(noticeType == 1 && !request.content){
+            msg = "请输入通知内容";
         }else if(!request.imgloc){
-            msg = "请上传图片";
-        }else if (noticeType==2 && !request.relationid){
+			msg = "请上传图片";
+		}else if (noticeType==2 && !request.relationid){
             msg = "请选择关联商品";
         }else{
             msg = "";
@@ -201,12 +201,16 @@ export default class Add extends React.Component{
                                 disable = {!!type}
                                 require = {true}
                                 label = "通知主题："/>
-                    <LabelArea onChange = {this.changeInput.bind(this,"content")}
-                               value =  {request.content}
-                               disable = {!!type}
-                               require = {true}
-                               label = "通知内容："/>
-                    <div>
+
+                    {
+						noticeType==1 &&
+                        <LabelArea onChange = {this.changeInput.bind(this,"content")}
+                                   value =  {request.content}
+                                   disable = {!!type}
+                                   require = {true}
+                                   label = "通知内容："/>
+                    }
+                    <div className="m-t-10">
                         <div className="clearfix">
                             <label className="left-label left"> <span className="require">*</span>上传图片：</label>
                             {
@@ -224,6 +228,13 @@ export default class Add extends React.Component{
                                                length = {6} />
                             }
                         </div>
+                        {
+                            noticeType==2 &&
+                            <p className="tips">
+                                <span className="require">*</span>
+                                只显示首张图片作为封面
+                            </p>
+                        }
                     </div>
                     {
                         noticeType==2 &&

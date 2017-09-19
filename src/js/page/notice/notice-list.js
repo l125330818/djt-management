@@ -38,6 +38,7 @@ export default class List extends React.Component{
         this.checkAll = this.checkAll.bind(this);
         this.batchDelete = this.batchDelete.bind(this);
         this.goPage = this.goPage.bind(this);
+        this.reset = this.reset.bind(this);
     }
     componentDidMount(){
         document.addEventListener("keyup",this.enterKey.bind(this));
@@ -54,6 +55,20 @@ export default class List extends React.Component{
     }
     componentWillUnmount(){
         document.removeEventListener("keyup",this.enterKey.bind(this));
+    }
+	reset(){
+        let obj = {
+			companyName:localStorage.companyName || "",
+			keyWord:"",
+			query:"",
+			pageNum:1,
+			pageSize:10,
+        };
+        this.setState({
+            listRequest:obj
+        },()=>{
+            this.getList();
+        })
     }
     getList(pageNo=1){
         let {listRequest,pager} = this.state;
@@ -95,7 +110,7 @@ export default class List extends React.Component{
     inputChange(type,e){
         let {listRequest} = this.state;
         listRequest[type] = e.target.value;
-        this.setState({});
+        this.setState({listRequest});
     }
     checkAll(e){
         let {list,checkedAll} = this.state;
@@ -148,6 +163,7 @@ export default class List extends React.Component{
     }
     deleteAjax(id){
         let _this = this;
+        let {pager} = this.state;
         RUI.DialogManager.confirm({
             message:"您确定要删除吗？",
             title:"删除活动",
@@ -161,7 +177,7 @@ export default class List extends React.Component{
                         if(data.status == "0000"){
                             Pubsub.publish("showMsg",["success","删除成功"]);
                             _this.setState({checkedAll:false},()=>{
-                                _this.getList();
+                                _this.getList(pager.currentPage);
                             });
                         }else{
                             Pubsub.publish("showMsg",["wrong",data.msg]);
@@ -194,6 +210,7 @@ export default class List extends React.Component{
     groundAjax(id,status){
         console.log(status)
         let _this = this;
+        let {pager} = this.state;
         $.ajax({
             url:commonUrl + "/djt/web/activity/batchup.do",
             type:"post",
@@ -201,9 +218,10 @@ export default class List extends React.Component{
             data:{activityid:JSON.stringify(id),status:status},
             success(data){
                 if(data.status == "0000"){
-                    Pubsub.publish("showMsg",["success",status==0?"下线成功":"上线成功"]);
-                    _this.setState({checkedAll:false});
-                    _this.getList();
+                    Pubsub.publish("showMsg",["success",status==1?"下线成功":"上线成功"]);
+                    _this.setState({checkedAll:false},()=>{
+                        _this.getList(pager.currentPage);
+                    });
                 }else{
                     Pubsub.publish("showMsg",["wrong",data.msg]);
                 }
@@ -211,16 +229,19 @@ export default class List extends React.Component{
         })
     }
     render(){
-        let {pager,sortState,list,checkedAll} =this.state;
+        let {pager,sortState,list,checkedAll,listRequest} =this.state;
         return(
             <div>
                 <Layout mark = "tz" bread = {["通知管理","通知列表"]}>
                     <div className="search-div">
-                        <RUI.Input onChange = {this.inputChange.bind(this,"query")} placeholder = "请输入主题内容"/>
+                        <RUI.Input onChange = {this.inputChange.bind(this,"query")}
+                                   value = {listRequest.query}
+                                   placeholder = "请输入主题内容"/>
                         <RUI.Button onClick = {this.search} className = "primary" >查询</RUI.Button>
+                        <RUI.Button onClick = {this.reset} className = "primary" >重置</RUI.Button>
                         <div className="right">
-                            <RUI.Button onClick = {this.batchGround.bind(this,1)}>批量上线</RUI.Button>
-                            <RUI.Button onClick = {this.batchGround.bind(this,0)}>批量下线</RUI.Button>
+                            <RUI.Button onClick = {this.batchGround.bind(this,0)}>批量上线</RUI.Button>
+                            <RUI.Button onClick = {this.batchGround.bind(this,1)}>批量下线</RUI.Button>
                             <RUI.Button onClick = {this.add} className = "primary">新增通知</RUI.Button>
                         </div>
                     </div>

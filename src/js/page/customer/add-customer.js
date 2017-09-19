@@ -20,7 +20,7 @@ export default class Add extends React.Component{
         super(props);
         // 初始状态
         this.state = {
-            brandSelect:[{key:"一级代理",value:1},{key:"二级代理",value:2}],
+            brandSelect:[{key:"一级代理",value:1},{key:"二级代理",value:2},{key:"三级代理",value:3}],
             provinceData:[],
             cityData:[],
             countyData:[],
@@ -320,7 +320,7 @@ export default class Add extends React.Component{
                             label = "微信："/>
                 <LabelInput onChange = {this.changeInput.bind(this,"email")}
                             placeholder = "请输入邮箱"
-                            value = {request.weixin}
+                            value = {request.email}
                             label = "邮箱："/>
                 <LabelDate require = {true}
                            label = "签约时间："
